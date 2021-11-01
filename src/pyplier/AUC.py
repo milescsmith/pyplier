@@ -1,7 +1,8 @@
 from scipy.stats import mannwhitneyu, norm
 import numpy as np
+from typing import Dict, List, Tuple
 
-def AUC(labels: list(float), values) -> dict[str, float]:
+def AUC(labels: List(float), values) -> Dict[str, float]:
   posii = [_ for _ in labels if _ > 0]
   negii = [_ for _ in labels if _ <= 0]
   posn = len(posii)
@@ -29,7 +30,7 @@ def mannwhitneyu_conf_int(
   x: np.array,
   y: np.array,
   alpha: float = 0.05
-  ) -> tuple(float, float):
+  ) -> Tuple(float, float):
     lx = len(x)
     ly = len(y)
 
