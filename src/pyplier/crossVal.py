@@ -18,7 +18,6 @@ def crossVal(
     param priorMatcv the zeroed-out prior info matrix used for PLIER
     computations
 
-    importFrom Rfast rowsums
     """
     out = pd.DataFrame(
         data=np.empty(shape=(0, 4)), columns=["pathway", "LV index", "AUC", "p-value"]
