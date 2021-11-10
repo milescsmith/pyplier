@@ -1,12 +1,17 @@
 import tempfile
 from typing import Any
+from nox_poetry import session
 
 import nox
 from nox.sessions import Session
 
 package = "pyplier"
-nox.options.sessions = "lint", "mypy", "pytype", "tests"
-locations = "src", "tests", "noxfile.py", "docs/conf.py"
+nox.options.sessions = ["black", "isort", "tests"]  # "mypy", "pytype", "lint",
+locations = (
+    "src",
+    "tests",
+)  # "noxfile.py", #"docs/conf.py"
+
 
 def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> None:
     """Install packages constrained by Poetry's lock file.
@@ -32,25 +37,37 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
         )
         session.install(f"--constraint={requirements.name}", *args, **kwargs)
 
-@nox.session
+
+@session(python=["3.9"])
 def tests(session: Session) -> None:
     args = session.posargs or locations
-    install_with_constraints(session, "pytest")
-    session.run('pytest')
 
-@nox.session()
+    session.install("pytest", ".")
+    session.install("hypothesis")
+    session.run("pytest", *args)
+
+
+@session(python=["3.9"])
 def black(session: Session) -> None:
     """Run black code formatter."""
     args = session.posargs or locations
-    install_with_constraints(session, "black")
+    session.install("black")
     session.run("black", *args)
 
-@nox.session
+
+@session(python=["3.9"])
+def isort(session: Session) -> None:
+    """Run black code formatter."""
+    args = session.posargs or locations
+    session.install("isort")
+    session.run("isort", *args)
+
+
+@session(python=["3.9"])
 def lint(session: Session) -> None:
     """Lint using flake8."""
     args = session.posargs or locations
-    install_with_constraints(
-        session,
+    session.install(
         "flake8",
         "flake8-annotations",
         "flake8-bandit",

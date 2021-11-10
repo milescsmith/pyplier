@@ -2,10 +2,11 @@ from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
-from numba import jit
+
+# from numba import jit
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def crossprod(
     mat1: Union[np.array, pd.DataFrame],
     mat2: Optional[Union[np.array, pd.DataFrame]] = None,
@@ -17,7 +18,7 @@ def crossprod(
         return mat1.tranpose() @ mat2
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def tcrossprod(
     mat1: Union[np.array, pd.DataFrame],
     mat2: Optional[Union[np.array, pd.DataFrame]] = None,

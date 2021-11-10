@@ -41,12 +41,12 @@ def mannwhitneyu_conf_int(
     diffs = sorted([i - j for i in x for j in y])
 
     # For an approximate 100(1-a)% confidence interval first calculate K:
-    nm = n*m
-    top = nm*(n+m+1)
-    right = N*np.sqrt(top/12)
-    left = (n*m)/2
+    nm = n * m
+    top = nm * (n + m + 1)
+    right = N * np.sqrt(top / 12)
+    left = (n * m) / 2
     K = left - right
 
     # The Kth smallest to the Kth largest of the n x m differences
     # lx and ly should be > ~20
-    return (diffs[round(K)], diffs[len(diffs)-round(K)])
+    return (diffs[round(K)], diffs[len(diffs) - round(K)])

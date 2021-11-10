@@ -35,7 +35,7 @@ def crossVal(
                     .apply(
                         lambda x: True
                         if (x[0] == 0) or ((x[0] > 0) and (x[1] == 0))
-                        else np.nan, # use np.nan instead of False so that we can drop entries in the chain
+                        else np.nan,  # use np.nan instead of False so that we can drop entries in the chain
                         axis=1,
                     )
                     .dropna()
@@ -84,5 +84,6 @@ def crossVal(
             Uauc.loc[j, i] = aucres["auc"]
             Up.loc[j, i] = aucres["pval"]
 
-    out.loc[:, "fdr"] = multipletests(out["pval"], method="fdr_bh")
+    _, fdr, *_ = multipletests(out.loc[:, "p-value"], method="fdr_bh")
+    out.loc[:, "fdr"] = fdr
     return {"Uauc": Uauc, "Upval": Up, "summary": out}
