@@ -1,5 +1,4 @@
 from math import floor
-from typing import TypedDict
 
 import numpy as np
 import pandas as pd
@@ -8,26 +7,12 @@ from statsmodels.stats.multitest import multipletests
 
 from .AUC import AUC
 from .copyMat import copyMat
+from .stubs import PLIERResults
 from .utils import crossprod, tcrossprod
-
-PlierResults = TypedDict(
-    "PlierResults",
-    {
-        "residual": pd.DataFrame,
-        "B": pd.DataFrame,
-        "Z": pd.DataFrame,
-        "U": pd.DataFrame,
-        "C": pd.DataFrame,
-        "L1": float,
-        "L2": float,
-        "L3": float,
-        "heldOutGenes": dict[str, list[str]],
-    },
-)
 
 
 def getAUC(
-    plierRes: PlierResults, data: pd.DataFrame, priorMat: pd.DataFrame
+    plierRes: PLIERResults, data: pd.DataFrame, priorMat: pd.DataFrame
 ) -> dict[str, pd.DataFrame]:
     B = plierRes["B"]
     Z = plierRes["Z"]
