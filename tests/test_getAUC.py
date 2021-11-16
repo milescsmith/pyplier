@@ -8,23 +8,19 @@ from pyplier.getAUC import getAUC
 
 @pytest.fixture
 def test_plierRes():
-    heldOutGenes_file = importlib.resources.files("tests").joinpath(
-        "data/common/heldOutGenes.csv"
-    )
-    B_file = importlib.resources.files("tests").joinpath("data/common/plierRes_b.csv")
-    C_file = importlib.resources.files("tests").joinpath("data/common/plierRes_c.csv")
+
+    B_file = importlib.resources.files("tests").joinpath("data/getAUC/getAUC_b.csv")
+    C_file = importlib.resources.files("tests").joinpath("data/getAUC/getAUC_c.csv")
     residual_file = importlib.resources.files("tests").joinpath(
-        "data/common/plierRes_residual.csv"
+        "data/getAUC/getAUC_residual.csv"
     )
-    U_file = importlib.resources.files("tests").joinpath("data/common/plierRes_u.csv")
-    Z_file = importlib.resources.files("tests").joinpath("data/common/plierRes_z.csv")
-    L1 = 18.5633
-    L2 = 37.12661
+    U_file = importlib.resources.files("tests").joinpath("data/getAUC/getAUC_u.csv")
+    Z_file = importlib.resources.files("tests").joinpath("data/getAUC/getAUC_z.csv")
+    L1 = 18.43058
+    L2 = 36.86117
     L3 = 0.0005530844
 
-    with importlib.resources.as_file(
-        heldOutGenes_file
-    ) as hogf, importlib.resources.as_file(B_file) as bf, importlib.resources.as_file(
+    with importlib.resources.as_file(B_file) as bf, importlib.resources.as_file(
         C_file
     ) as cf, importlib.resources.as_file(
         residual_file
@@ -38,7 +34,6 @@ def test_plierRes():
         res_df = pd.read_csv(resf, index_col=0)
         u_df = pd.read_csv(uf, index_col=0)
         z_df = pd.read_csv(zf, index_col=0)
-        hog_df = pd.read_csv(hogf, index_col=0)
 
     plierRes = {
         "residual": res_df,
@@ -49,14 +44,16 @@ def test_plierRes():
         "L1": L1,
         "L2": L2,
         "L3": L3,
-        "heldOutGenes": {k: g["value"].tolist() for k, g in hog_df.groupby("name")},
+        "heldOutGenes": list(),
     }
     return plierRes
 
 
 @pytest.fixture
 def test_data():
-    data_file = importlib.resources.files("tests").joinpath("data/common/data.csv")
+    data_file = importlib.resources.files("tests").joinpath(
+        "data/getAUC/getAUC_data.csv"
+    )
     with importlib.resources.as_file(data_file) as df:
         data_df = pd.read_csv(df, index_col=0)
     return data_df
@@ -65,7 +62,7 @@ def test_data():
 @pytest.fixture
 def test_priorMat():
     priorMat_file = importlib.resources.files("tests").joinpath(
-        "data/common/priorMat.csv"
+        "data/getAUC/getAUC_priormat.csv"
     )
     with importlib.resources.as_file(priorMat_file) as pmf:
         priorMat_df = pd.read_csv(pmf, index_col=0)
@@ -75,13 +72,13 @@ def test_priorMat():
 @pytest.fixture
 def expected_AUC():
     summary_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/aucresults_summary.csv"
+        "data/getAUC/getAUC_summary.csv"
     )
     uauc_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/aucresults_uauc.csv"
+        "data/getAUC/getAUC_uauc.csv"
     )
     upval_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/aucresults_upval.csv"
+        "data/getAUC/getAUC_up.csv"
     )
 
     with importlib.resources.as_file(summary_file) as sf, importlib.resources.as_file(

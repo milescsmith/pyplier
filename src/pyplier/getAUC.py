@@ -24,9 +24,9 @@ def getAUC(
 
     for i in range(5):
         ii = [
-            (_ * 5 + i) - 1
+            (_ * 5 + i) + 1
             for _ in range(floor(data.shape[0] / 5))
-            if (_ * 5 + i) <= Z.shape[0]
+            if (_ * 5 + i) + 1 <= Z.shape[0]
         ]
         Z_not_ii = Z.loc[~Z.index.isin(Z.iloc[ii, :].index)]
         data_not_ii = data.loc[~data.index.isin(data.iloc[ii, :].index)]
@@ -69,6 +69,9 @@ def getAUC(
             Uauc.loc[j, i] = aucres["auc"]
             Up.loc[j, i] = aucres["pval"]
 
+    out["LV index"] = (
+        out["LV index"].apply(lambda x: x.strip("LV")).astype(np.int64)
+    )  # to match the output from {PLIER}
     _, fdr, *_ = multipletests(out.loc[:, "p-value"], method="fdr_bh")
     out.loc[:, "FDR"] = fdr
-    return {"Uauc": Uauc, "Upval": Up, "summary": out}
+    return {"Uauc": Uauc, "Upval": Up, "summary": out.reset_index(drop=True)}

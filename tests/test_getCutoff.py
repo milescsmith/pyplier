@@ -9,13 +9,13 @@ from pyplier.getCutoff import getCutoff
 @pytest.fixture
 def AUC_results():
     summary_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/aucresults_summary.csv"
+        "data/getAUC/getAUC_summary.csv"
     )
     uauc_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/aucresults_uauc.csv"
+        "data/getAUC/getAUC_uauc.csv"
     )
     upval_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/aucresults_upval.csv"
+        "data/getAUC/getAUC_up.csv"
     )
 
     with importlib.resources.as_file(summary_file) as sf, importlib.resources.as_file(
@@ -32,4 +32,4 @@ def test_getAUC(AUC_results):
 
     cutoff = getCutoff(AUC_results, 0.01)
 
-    assert cutoff == 0.0012647771071858
+    assert cutoff == 0.0090271002031886

@@ -14,7 +14,7 @@ PLIERResults = TypedDict(
         "L2": float,
         "L3": float,
         "heldOutGenes": dict[str, list[str]],
-        "withPrior": list[str],
+        "withPrior": dict[str, int],
         "Uauc": DataFrame,
         "Up": DataFrame,
         "summary": DataFrame,
