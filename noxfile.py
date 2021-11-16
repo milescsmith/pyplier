@@ -51,7 +51,7 @@ def tests(session: Session) -> None:
 def black(session: Session) -> None:
     """Run black code formatter."""
     args = session.posargs or locations
-    session.install("black")
+    session.install("black[jupyter]")
     session.run("black", *args)
 
 
