@@ -15,7 +15,7 @@ def crossprod(
     if mat2 is None:
         return mat1.transpose() @ mat1
     else:
-        return mat1.tranpose() @ mat2
+        return mat1.transpose() @ mat2
 
 
 # @jit(nopython=True)
@@ -27,4 +27,4 @@ def tcrossprod(
     if mat2 is None:
         return mat1 @ mat1.transpose()
     else:
-        return mat1 @ mat2.tranpose()
+        return mat1 @ mat2.transpose()
