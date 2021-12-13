@@ -1,9 +1,9 @@
 import tempfile
 from typing import Any
-from nox_poetry import session
 
 import nox
 from nox.sessions import Session
+from nox_poetry import session
 
 package = "pyplier"
 nox.options.sessions = ["black", "isort", "tests"]  # "mypy", "pytype", "lint",
