@@ -1,14 +1,19 @@
 import random
 
+from functools import singledispatch
+
 import numpy as np
 from pysmooth import smooth
 from scipy.linalg import svd
 from sklearn.preprocessing import scale
 from sklearn.utils.extmath import randomized_svd
 
+from icontract import require, ensure
+
 from .console import console
 
 
+@require(lambda data: data.ndim >= 2)
 def num_pc(
     data: np.ndarray, method: str = None, B: int = 20, seed: int = None
 ) -> float:
@@ -30,19 +35,7 @@ def num_pc(
     else:
         k = int(max(200, n / 4))
 
-    if isinstance(data, np.ndarray):
-        console.print("Computing svd")
-        data = scale(data, axis=1)
-        uu = compute_svd(data, k)
-    elif isinstance(data, dict):
-        if data["d"] is not None:
-            if method == "permutation":
-                console.print(
-                    "Original data is needed for permutation method.\nSetting method to elbow"
-                )
-                method = "elbow"
-
-        uu = data
+    uu, method = compute_uu(data, method=method, k=k)
 
     if (
         method == "permutation"
@@ -74,16 +67,34 @@ def num_pc(
 
         nsv = np.sum(psv[psv <= 0.1])
     elif method == "elbow":
-        # xraw = abs(np.diff(np.diff(uu)))
-        # console.print("Smoothing data")
-        # x = smooth(xraw, twiceit = True)
-        # # plot(x)
-
-        # nsv = int((np.argwhere(x <= np.quantile(x, 0.05)))[2])+1
-
         nsv = elbow(uu)
 
     return nsv
+
+
+@singledispatch
+def compute_uu(data, **kwargs):
+    pass
+
+
+@compute_uu.register
+def _(data: np.ndarray, **kwargs):
+    console.print("Computing svd")
+    data = scale(data, axis=1)
+    uu = compute_svd(data, kwargs['k'])
+    return uu, kwargs['method']
+
+
+@compute_uu.register
+def _(data: dict, **kwargs):
+    if data["d"] is not None:
+        if kwargs['method'] == "permutation":
+            console.print(
+                "Original data is needed for permutation method.\nSetting method to elbow"
+                )
+            method = "elbow"
+        uu = data
+    return uu, method
 
 
 def elbow(uu: np.ndarray) -> int:
@@ -95,6 +106,7 @@ def elbow(uu: np.ndarray) -> int:
     return int((np.argwhere(x <= np.quantile(x, 0.5)))[1]) + 1
 
 
+@require(lambda data: data.ndim >= 2)
 def compute_svd(data: np.ndarray, k: int) -> np.ndarray:
     n = data.shape[1]  # nrows
     if n < 500:
