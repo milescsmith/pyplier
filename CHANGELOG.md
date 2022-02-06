@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.1] - 2022-02-06
+
+### Changed
+
+- Update dependencys to eliminate ipython vulnerability
+
 ## [0.6.0] - 2022-02-06
 
 ### Added
@@ -10,4 +16,5 @@
 - Add icontract-based function input validation to some functions
 
 
+[0.6.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.0..0.6.1
 [0.6.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/0.6.0
