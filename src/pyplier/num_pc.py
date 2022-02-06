@@ -1,21 +1,23 @@
 import random
-
 from functools import singledispatch
+from typing import Dict, Tuple, Union
 
 import numpy as np
+from icontract import ensure, require
 from pysmooth import smooth
 from scipy.linalg import svd
 from sklearn.preprocessing import scale
 from sklearn.utils.extmath import randomized_svd
 
-from icontract import require, ensure
-
 from .console import console
 
 
-@require(lambda data: data.ndim >= 2)
+@ensure(lambda result: result > 0)
 def num_pc(
-    data: np.ndarray, method: str = None, B: int = 20, seed: int = None
+    data: Union[Dict[str, np.ndarray], np.ndarray],
+    method: str = None,
+    B: int = 20,
+    seed: int = None,
 ) -> float:
 
     if method is None:
@@ -28,12 +30,14 @@ def num_pc(
 
     if seed is not None:
         random.seed(seed)
-
-    n = data.shape[1]  # nrows
-    if n < 500:
-        k = n
+    if not isinstance(data, dict):
+        n = data.shape[1]  # nrows
+        if n < 500:
+            k = n
+        else:
+            k = int(max(200, n / 4))
     else:
-        k = int(max(200, n / 4))
+        k = None
 
     uu, method = compute_uu(data, method=method, k=k)
 
@@ -78,25 +82,28 @@ def compute_uu(data, **kwargs):
 
 
 @compute_uu.register
-def _(data: np.ndarray, **kwargs):
+def _(data: np.ndarray, **kwargs) -> Tuple[np.ndarray, str]:
     console.print("Computing svd")
     data = scale(data, axis=1)
-    uu = compute_svd(data, kwargs['k'])
-    return uu, kwargs['method']
+    uu = compute_svd(data, kwargs["k"])
+    return uu, kwargs["method"]
 
 
 @compute_uu.register
 def _(data: dict, **kwargs):
     if data["d"] is not None:
-        if kwargs['method'] == "permutation":
+        if kwargs["method"] == "permutation":
             console.print(
                 "Original data is needed for permutation method.\nSetting method to elbow"
-                )
+            )
             method = "elbow"
-        uu = data
+        else:
+            method = kwargs["method"]
+        uu = data["d"]
     return uu, method
 
 
+@ensure(lambda result: result > 1)
 def elbow(uu: np.ndarray) -> int:
     xraw = abs(np.diff(np.diff(uu)))
     console.print("Smoothing data")
