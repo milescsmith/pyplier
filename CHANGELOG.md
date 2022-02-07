@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2] - 2022-02-07
+
+### Changed
+
+- Removed numba as a dependency for now (it wasn't being used anyway), allowing
+the required numpy version to be updated to >1.21 (lower version had a vulnerability)
+- Update all dependencies
+
 ## [0.6.1] - 2022-02-06
 
 ### Changed
@@ -16,5 +24,6 @@
 - Add icontract-based function input validation to some functions
 
 
-[0.6.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.0..0.6.1
+[0.6.2]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.1..0.6.2
+[0.6.i]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.0..0.6.1
 [0.6.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/0.6.0
