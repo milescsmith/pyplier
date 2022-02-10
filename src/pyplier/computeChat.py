@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from numba import jit
+# from numba import jit
 from scipy.linalg import LinAlgError, svd
 
 from .utils import crossprod
@@ -15,7 +15,7 @@ def computeChat(gsMat, reg: int = 5):
     return Chat
 
 
-@jit(nopython=True)
+# @jit(nopython=True)
 def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
     """
     A variation of calculating the Moore-Penrose inverse with ridge adjustment
@@ -34,7 +34,7 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
     u, d, v = svd(df)
 
     if alfa > 0:
-        di = (np.power(d, 2) + alfa ** 2) / d
+        di = (np.power(d, 2) + alfa**2) / d
     else:
         di = d
     out = v.transpose() @ np.multiply(1 / di, u).transpose()

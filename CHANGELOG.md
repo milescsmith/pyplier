@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0] - 2022-02-08
+
+## Added
+
+- First draft of the main PLIER function
+
+### Changed
+
+- Compress test data and change tests to reflect
+- Minor code changes to eliminate pytest warnings
+- Switched `PLIERResults` from a TypedDict to a class
+
 ## [0.6.2] - 2022-02-07
 
 ### Changed
@@ -12,7 +24,7 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 
 ### Changed
 
-- Update dependencys to eliminate ipython vulnerability
+- Update dependenciess to eliminate ipython vulnerability
 
 ## [0.6.0] - 2022-02-06
 

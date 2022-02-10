@@ -7,15 +7,17 @@ from icontract import ensure, require
 from numpy.random import default_rng
 from rich import print as rprint
 from scipy.linalg import solve, svd
-from sklearn.preprocessing import normalize
 from sklearn.utils.extmath import randomized_svd
 
 from .commonRows import commonRows
 from .num_pc import num_pc
 from .pinv_ridge import pinv_ridge
+from .solveU import solveU
 from .stubs import PLIERResults
 from .utils import crossprod, rowNorm, setdiff, tcrossprod
-from .solveU import solveU
+from .crossVal import crossVal
+from .getAUC import getAUC
+from .nameB import nameB
 
 
 @require(lambda pathwaySelection: pathwaySelection in ("complete", "fast"))
@@ -123,7 +125,7 @@ def PLIER(
                 columns=priorMat.columns,
                 index=extra_genes,
                 )
-            priorMat = priorMat.append(eMat)
+            priorMat = pd.concat([priorMat,eMat], axis=0)
             priorMat = priorMat.loc[data.index,:]
 
     numGenes = priorMat.sum(axis='rows') # colsums
@@ -220,9 +222,6 @@ def PLIER(
 
     iter_full_start = iter_full = 20
 
-    curfrac = 0
-    nposlast = np.inf
-    npos = -np.inf
     if L3 is not None:
         L3_given = True
     else:
@@ -240,35 +239,49 @@ def PLIER(
             else:
                 U = solveU(Z, Chat, C, penalty_factor, pathwaySelection, glm_alpha, maxPath, L3 = L3)
         
+            Z1 = tcrossprod(Y, B)
+            Z2 = L1 * (C @ U)
+            
+            Z1_nonzero = np.argwhere(np.asarray(Z1.T.stack()) > 0).flatten()
+            Z2_nonzero = np.argwhere(np.asarray(Z2.T.stack()) > 0).flatten()
+            
+            ratio = np.median(
+                np.divide(
+                    Z2,
+                    np.asarray(Z1)
+                ).T
+                .stack()
+                .values[
+                    np.intersect1d(
+                        Z2_nonzero,
+                        Z1_nonzero
+                        )
+                    ]
+                )
+            
+            Z = (Z1 + Z2) @ solve(tcrossprod(B) + L1 * diag_mat)
             # TODO: YOU ARE HERE
-            curfrac = (npos = sum(apply(U, 2, max) > 0)) / num_LVs
-            Z1 = Y @ t(B)
-            Z2 = L1 * C @ U
-            ratio = median((Z2 / Z1)[Z2 > 0 & Z1 > 0])
-            Z = (Z1 + Z2) @ solve(tcrossprod(B) + L1 * diag(num_LVs))
-        else
-            Z = (Y @ t(B)) @ solve(tcrossprod(B) + L1 * diag(num_LVs))
+        else:
+            Z = tcrossprod(Y, B) @ solve(tcrossprod(B) + L1 * diag_mat)
 
         Z[Z < 0] = 0
 
         oldB = B
-        B = solve(t(Z) @ Z + L2 * diag(num_LVs)) @ t(Z) @ Y
+        B = solve(Z.trasnpose() @ Z + L2 * diag_mat) @ Z.transpose() @ Y
 
         Bdiff = sum((B - oldB)**2) / sum(B**2)
-        BdiffTrace = c(BdiffTrace, Bdiff)
-
-        err0 = sum((Y - Z @ B)**2) + sum((Z - C @ U)**2) * L1 + sum(B**2) * L2
+        BdiffTrace = BdiffTrace.append(Bdiff)
         
-        if (trace & i >= iter_full_start):
-            rprint(f"iter {i} errorY= {round2(mean((Y - Z @ B)**2))} prior information ratio= {round(ratio,2)} Bdiff= {round2(Bdiff)} Bkappa= {round2(kappa(B)))};pos. col. U= {sum(colSums(U) > 0)}")
-        elif trace
-            rprint(f"iter {i} errorY= {round2(mean((Y - Z @ B)**2))} Bdiff= {round2(Bdiff)} Bkappa= {round2(kappa(B))}")
+        if trace & (i >= iter_full_start):
+            rprint(f"iter {i} errorY = {np.mean((Y - Z @ B)**2):.4f} prior information ratio= {round(ratio,2)} Bdiff = {Bdiff:.4f} Bkappa= {np.linalg.cond(B):.4f};pos. col. U = {sum(U.sum(axis='index') > 0)}")
+        elif trace:
+            rprint(f"iter {i} errorY = {np.mean((Y - Z @ B)**2):.4f} Bdiff = {np.linalg.cond(Bdiff):.4f} Bkappa = {np.linalg.cond(B):.4f}")
 
-        if (i > 52 and Bdiff > BdiffTrace[i - 50]):
-            BdiffCount = BdiffCount + 1
-            message("Bdiff is not decreasing")
+        if (i > 52) and (Bdiff > BdiffTrace[i - 50]):
+            BdiffCount += 1
+            rprint("Bdiff is not decreasing")
         elif BdiffCount > 1:
-            BdiffCount = BdiffCount - 1
+            BdiffCount -= 1
 
         if (Bdiff < tol):
             rprint(f"converged at iteration {i}")
@@ -280,34 +293,33 @@ def PLIER(
     U.index = priorMat.columns
     U.columns = [f"LV{_+1}" for _ in range(num_LVs)]
 
-
     B.index = [f"LV{_+1}" for _ in range(num_LVs)]
 
     out = PLIERResults(
-        "residual" = (Y - Z @ B),
-        "B" = B,
-        "Z" = Z,
-        "U" = U,
-        "C" = C,
-        "L1" = L1,
-        "L2" = L2,
-        "L3" = L3,
-        "heldOutGenes" = heldOutGenes
+        residual = (Y - Z @ B),
+        B = B,
+        Z = Z,
+        U = U,
+        C = C,
+        L1 = L1,
+        L2 = L2,
+        L3 = L3,
+        heldOutGenes = heldOutGenes
         )
         
     if doCrossval:
         outAUC = crossVal(out, Y, priorMat, priorMatCV)
     else:
-        message("Not using cross-validation. AUCs and p-values may be over-optimistic")
+        rprint("Not using cross-validation. AUCs and p-values may be over-optimistic")
         outAUC = getAUC(out, Y, priorMat)
 
-    out["withPrior"] = which(colSums(out["U"]) > 0)
-    out["Uauc"] = chuck(outAUC, "Uauc")
-    out["Up"] = chuck(outAUC, "Upval")
-    out["summary"] = chuck(outAUC, "summary")
-    tt = colMaxs(out["Uauc"], value = True, parallel = True)
+    out.withPrior = U.sum(axis="index")[U.sum(axis="index") > 0].to_dict()
+    out.Uauc = outAUC["Uauc"]
+    out.Up = outAUC["Upval"]
+    out.summary = outAUC["summary"]
+    tt = U.max(axis="index")
     rprint(f"There are {sum(tt > 0.7)} LVs with AUC > 0.70")
 
-    rownames(out["B"]) = nameB(out)
+    rownames(out.B) = nameB(out)
 
     return out

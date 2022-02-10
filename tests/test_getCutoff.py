@@ -1,26 +1,26 @@
-import importlib.resources
+from sys import version_info
+
+if version_info[1] == 8:
+    import importlib_resources as ir
+elif version_info[1] >= 9:
+    import importlib.resources as ir
 
 import pandas as pd
 import pytest
 
 from pyplier.getCutoff import getCutoff
+from pyplier.stubs import PLIERResults
 
 
 @pytest.fixture
 def AUC_results():
-    summary_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/getAUC_summary.csv"
-    )
-    uauc_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/getAUC_uauc.csv"
-    )
-    upval_file = importlib.resources.files("tests").joinpath(
-        "data/getAUC/getAUC_up.csv"
-    )
+    summary_file = ir.files("tests").joinpath("data", "getAUC", "getAUC_summary.csv.gz")
+    uauc_file = ir.files("tests").joinpath("data", "getAUC", "getAUC_uauc.csv.gz")
+    upval_file = ir.files("tests").joinpath("data", "getAUC", "getAUC_up.csv.gz")
 
-    with importlib.resources.as_file(summary_file) as sf, importlib.resources.as_file(
-        uauc_file
-    ) as uaf, importlib.resources.as_file(upval_file) as upf:
+    with ir.as_file(summary_file) as sf, ir.as_file(uauc_file) as uaf, ir.as_file(
+        upval_file
+    ) as upf:
         summary_df = pd.read_csv(sf, index_col=0)
         uauc_df = pd.read_csv(uaf, index_col=0)
         upval_df = pd.read_csv(upf, index_col=0)
@@ -32,4 +32,4 @@ def test_getAUC(AUC_results):
 
     cutoff = getCutoff(AUC_results, 0.01)
 
-    assert cutoff == 0.0090271002031886
+    assert cutoff == pytest.approx(0.0090271002031886)

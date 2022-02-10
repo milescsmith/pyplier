@@ -44,15 +44,19 @@ def crossVal(
                 aucres = AUC(
                     priorMat.loc[iiheldout, j], plierRes["Z"].loc[iiheldout, i]
                 )
-                out = out.append(
-                    other=pd.DataFrame(
-                        {
-                            "pathway": [j],
-                            "LV index": [i],
-                            "AUC": [aucres["auc"]],
-                            "p-value": [aucres["pval"]],
-                        }
-                    )
+                out = pd.concat(
+                    [
+                        out,
+                        pd.DataFrame(
+                            {
+                                "pathway": [j],
+                                "LV index": [i],
+                                "AUC": [aucres["auc"]],
+                                "p-value": [aucres["pval"]],
+                            }
+                        )
+                    ],
+                    axis=0
                 )
                 Uauc.loc[j, i] = aucres["auc"]
                 Up.loc[j, i] = aucres["pval"]
@@ -71,15 +75,19 @@ def crossVal(
                 .index
             )
             aucres = AUC(priorMat.loc[iiheldout, j], plierRes["Z"].loc[iiheldout, i])
-            out = out.append(
-                other=pd.DataFrame(
-                    {
-                        "pathway": [j],
-                        "LV index": [i],
-                        "AUC": [aucres["auc"]],
-                        "p-value": [aucres["pval"]],
-                    }
-                )
+            out = pd.concat(
+                [
+                    out,
+                    pd.DataFrame(
+                        {
+                            "pathway": [j],
+                            "LV index": [i],
+                            "AUC": [aucres["auc"]],
+                            "p-value": [aucres["pval"]],
+                        }
+                    )
+                ],
+                axis=0
             )
             Uauc.loc[j, i] = aucres["auc"]
             Up.loc[j, i] = aucres["pval"]

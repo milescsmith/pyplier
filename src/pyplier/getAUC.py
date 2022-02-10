@@ -1,4 +1,5 @@
 from math import floor
+from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -13,14 +14,14 @@ from .utils import crossprod, tcrossprod
 
 def getAUC(
     plierRes: PLIERResults, data: pd.DataFrame, priorMat: pd.DataFrame
-) -> dict[str, pd.DataFrame]:
-    B = plierRes["B"]
-    Z = plierRes["Z"]
+) -> Dict[str, pd.DataFrame]:
+    B = plierRes.B
+    Z = plierRes.Z
     Zcv = copyMat(Z)
     k = Z.shape[1]
-    L1 = plierRes["L1"]
-    L2 = plierRes["L2"]
-    U = plierRes["U"]
+    L1 = plierRes.L1
+    L2 = plierRes.L2
+    U = plierRes.U
 
     for i in range(5):
         ii = [
@@ -55,15 +56,19 @@ def getAUC(
         for j in iipath:
             aucres = AUC(priorMat.loc[:, j], Zcv.loc[:, i])
 
-            out = out.append(
-                other=pd.DataFrame(
-                    {
-                        "pathway": [j],
-                        "LV index": [i],
-                        "AUC": [aucres["auc"]],
-                        "p-value": [aucres["pval"]],
-                    }
-                )
+            out = pd.concat(
+                [
+                    out,
+                    pd.DataFrame(
+                        {
+                            "pathway": [j],
+                            "LV index": [i],
+                            "AUC": [aucres["auc"]],
+                            "p-value": [aucres["pval"]],
+                        }
+                    )
+                ],
+                axis=0
             )
 
             Uauc.loc[j, i] = aucres["auc"]

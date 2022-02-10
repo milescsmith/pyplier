@@ -6,7 +6,7 @@ import numpy as np
 from icontract import ensure, require
 from pysmooth import smooth
 from scipy.linalg import svd
-from sklearn.preprocessing import scale
+from sklearn.preprocessing import StandardScaler #scale
 from sklearn.utils.extmath import randomized_svd
 
 from .console import console
@@ -84,7 +84,8 @@ def compute_uu(data, **kwargs):
 @compute_uu.register
 def _(data: np.ndarray, **kwargs) -> Tuple[np.ndarray, str]:
     console.print("Computing svd")
-    data = scale(data, axis=1)
+    scaler = StandardScaler()
+    data = scaler.fit_transform(data.T)
     uu = compute_svd(data, kwargs["k"])
     return uu, kwargs["method"]
 

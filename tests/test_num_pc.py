@@ -16,7 +16,7 @@ elif version_info[1] >= 9:
 
 @pytest.fixture
 def test_100_mat() -> np.ndarray:
-    mat_file = ir.files("tests").joinpath("data/num_pc/test_pc_mat_100.csv")
+    mat_file = ir.files("tests").joinpath("data/num_pc/test_pc_mat_100.csv.gz")
     with ir.as_file(mat_file) as m100:
         mat_100 = np.loadtxt(m100, delimiter=",")
 
@@ -25,7 +25,7 @@ def test_100_mat() -> np.ndarray:
 
 @pytest.fixture
 def test_1000_mat() -> np.ndarray:
-    mat_file = ir.files("tests").joinpath("data/num_pc/test_pc_mat_1000.csv")
+    mat_file = ir.files("tests").joinpath("data/num_pc/test_pc_mat_1000.csv.gz")
     with ir.as_file(mat_file) as m1000:
         mat_1000 = np.loadtxt(m1000, delimiter=",")
 
@@ -37,8 +37,8 @@ def test_num_pc(test_100_mat, test_1000_mat):
 
     res_1000 = num_pc(data=test_1000_mat, method="elbow")
 
-    assert res_100 == 9
-    assert res_1000 == 9
+    assert res_100 == pytest.approx(9.0)
+    assert res_1000 == pytest.approx(10.0)
 
 
 @settings(deadline=None)

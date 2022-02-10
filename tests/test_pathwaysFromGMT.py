@@ -1,4 +1,9 @@
-import importlib.resources
+from sys import version_info
+
+if version_info[1] == 8:
+    import importlib_resources as ir
+elif version_info[1] >= 9:
+    import importlib.resources as ir
 
 import pandas as pd
 import pytest
@@ -8,18 +13,18 @@ from pyplier.pathwayFromGMT import pathwayFromGMT
 
 @pytest.fixture
 def expected_df():
-    reactome_file = importlib.resources.files("tests").joinpath(
-        "data/pathwayFromGMT/reactome_wide.csv"
+    reactome_file = ir.files("tests").joinpath(
+        "data", "pathwayFromGMT", "reactome_wide.csv.gz"
     )
-    with importlib.resources.as_file(reactome_file) as rf:
+    with ir.as_file(reactome_file) as rf:
         reactome_wide_df = pd.read_csv(rf, index_col=0)
 
     return reactome_wide_df
 
 
 def test_pathwayFromGMT(expected_df):
-    reactome_gmt = importlib.resources.files("tests").joinpath(
-        "data/pathwayFromGMT/c2.cp.reactome.v7.4.symbols.gmt"
+    reactome_gmt = ir.files("tests").joinpath(
+        "data", "pathwayFromGMT", "c2.cp.reactome.v7.4.symbols.gmt"
     )
 
     reactome_pathways = pathwayFromGMT(reactome_gmt)

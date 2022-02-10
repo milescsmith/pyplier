@@ -1,22 +1,21 @@
-from typing import TypedDict
+from typing import Dict, List
 
 from pandas import DataFrame
 
-PLIERResults = TypedDict(
-    "PlierResults",
-    {
-        "residual": DataFrame,
-        "B": DataFrame,
-        "Z": DataFrame,
-        "U": DataFrame,
-        "C": DataFrame,
-        "L1": float,
-        "L2": float,
-        "L3": float,
-        "heldOutGenes": dict[str, list[str]],
-        "withPrior": dict[str, int],
-        "Uauc": DataFrame,
-        "Up": DataFrame,
-        "summary": DataFrame,
-    },
-)
+from dataclasses import dataclass
+
+@dataclass
+class PLIERResults:
+    residual: DataFrame = None
+    B: DataFrame = None
+    Z: DataFrame = None
+    U: DataFrame = None
+    C: DataFrame = None
+    L1: float = None
+    L2: float = None
+    L3: float = None
+    heldOutGenes: Dict[str, List[str]] = None
+    withPrior: Dict[str, int] = None
+    Uauc: DataFrame = None
+    Up: DataFrame = None
+    summary: DataFrame = None
