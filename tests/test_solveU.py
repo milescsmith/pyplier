@@ -78,7 +78,7 @@ def test_solveU(
     expected_U_complete,
     expected_U_fast,
 ):
-    U_complete, L3_complete = solveU(
+    U_complete = solveU(
         Z=test_Z,
         Chat=test_Chat,
         priorMat=test_priorMat,
@@ -90,7 +90,7 @@ def test_solveU(
         L3=None,
     )
 
-    U_fast, L3_fast = solveU(
+    U_fast = solveU(
         Z=test_Z,
         Chat=test_Chat,
         priorMat=test_priorMat,
@@ -102,7 +102,7 @@ def test_solveU(
         L3=None,
     )
 
-    pd.testing.assert_frame_equal(U_complete, expected_U_complete)
-    pd.testing.assert_frame_equal(U_fast, expected_U_fast)
-    assert L3_complete == approx(5.144486e-05)
-    assert L3_fast == approx(5.144486e-05)
+    pd.testing.assert_frame_equal(U_complete["U"], expected_U_complete)
+    pd.testing.assert_frame_equal(U_fast["U"], expected_U_fast)
+    assert U_complete["L3"] == approx(5.144486e-05)
+    assert U_fast["L3"] == approx(5.144486e-05)

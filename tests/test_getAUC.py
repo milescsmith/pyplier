@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from pyplier.getAUC import getAUC
-from pyplier.stubs import PLIERResults
+from pyplier.PLIERRes import PLIERResults
 
 
 @pytest.fixture
@@ -36,15 +36,15 @@ def test_plierRes():
         z_df = pd.read_csv(zf, index_col=0)
 
     plierRes = PLIERResults(
-        residual = res_df,
-        B = b_df,
-        C = c_df,
-        U = u_df,
-        Z = z_df,
-        L1 = L1,
-        L2 = L2,
-        L3 = L3,
-        heldOutGenes = list(),
+        residual=res_df,
+        B=b_df,
+        C=c_df,
+        U=u_df,
+        Z=z_df,
+        L1=L1,
+        L2=L2,
+        L3=L3,
+        heldOutGenes=list(),
     )
     return plierRes
 

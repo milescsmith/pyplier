@@ -6,7 +6,7 @@ import numpy as np
 from icontract import ensure, require
 from pysmooth import smooth
 from scipy.linalg import svd
-from sklearn.preprocessing import StandardScaler #scale
+from sklearn.preprocessing import StandardScaler
 from sklearn.utils.extmath import randomized_svd
 
 from .console import console

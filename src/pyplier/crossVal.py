@@ -3,13 +3,15 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 from statsmodels.stats.multitest import multipletests
+from tqdm import tqdm
 
 from .AUC import AUC
 from .copyMat import copyMat
+from .PLIERRes import PLIERResults
 
 
 def crossVal(
-    plierRes: Dict[str, pd.DataFrame], priorMat: pd.DataFrame, priorMatcv: pd.DataFrame
+    plierRes: PLIERResults, priorMat: pd.DataFrame, priorMatcv: pd.DataFrame
 ) -> Dict[str, pd.DataFrame]:
     """
     title crossVal
@@ -22,14 +24,16 @@ def crossVal(
     out = pd.DataFrame(
         data=np.empty(shape=(0, 4)), columns=["pathway", "LV index", "AUC", "p-value"]
     )
-    ii = plierRes["U"].loc[:, np.sum(a=plierRes["U"], axis=0) > 0].columns
-    Uauc = copyMat(df=plierRes["U"], zero=True)
-    Up = pd.DataFrame(np.ones(shape=plierRes["U"].shape))
+    out_dict = dict()
+    ii = plierRes.U.loc[:, plierRes.U.sum(axis=0) > 0].columns
+    Uauc = copyMat(df=plierRes.U, zero=True)
+    Up = pd.DataFrame(np.ones(shape=plierRes.U.shape))
 
-    for i in ii:
-        iipath = plierRes["U"].loc[(plierRes["U"].loc[:, i] > 0), i].index
+    plierRes.to_disk("crossval_plierres.json")
+    for i in tqdm(ii):
+        iipath = plierRes.U.loc[(plierRes.U.loc[:, i] > 0), i].index
         if len(iipath) > 1:
-            for j in iipath:
+            for j in tqdm(iipath):
                 iiheldout = (
                     pd.concat([priorMat.loc[:, j], priorMatcv.loc[:, j]], axis=1)
                     .apply(
@@ -42,22 +46,14 @@ def crossVal(
                     .index
                 )
                 aucres = AUC(
-                    priorMat.loc[iiheldout, j], plierRes["Z"].loc[iiheldout, i]
+                    priorMat.loc[iiheldout, j], plierRes.Z.loc[iiheldout, i]
                 )
-                out = pd.concat(
-                    [
-                        out,
-                        pd.DataFrame(
-                            {
-                                "pathway": [j],
-                                "LV index": [i],
-                                "AUC": [aucres["auc"]],
-                                "p-value": [aucres["pval"]],
-                            }
-                        )
-                    ],
-                    axis=0
-                )
+                out_dict[j] = {
+                    "pathway": j,
+                    "LV index": i,
+                    "AUC": aucres["auc"],
+                    "p-value": aucres["pval"],
+                }
                 Uauc.loc[j, i] = aucres["auc"]
                 Up.loc[j, i] = aucres["pval"]
 
@@ -74,24 +70,16 @@ def crossVal(
                 .dropna()
                 .index
             )
-            aucres = AUC(priorMat.loc[iiheldout, j], plierRes["Z"].loc[iiheldout, i])
-            out = pd.concat(
-                [
-                    out,
-                    pd.DataFrame(
-                        {
-                            "pathway": [j],
-                            "LV index": [i],
-                            "AUC": [aucres["auc"]],
-                            "p-value": [aucres["pval"]],
-                        }
-                    )
-                ],
-                axis=0
-            )
+            aucres = AUC(priorMat.loc[iiheldout, j], plierRes.Z.loc[iiheldout, i])
+            out_dict[j] = {
+                "pathway": j,
+                "LV index": i,
+                "AUC": aucres["auc"],
+                "p-value": aucres["pval"],
+            }
             Uauc.loc[j, i] = aucres["auc"]
             Up.loc[j, i] = aucres["pval"]
-
+    out = pd.DataFrame.from_dict(out_dict, orient="index")
     _, fdr, *_ = multipletests(out.loc[:, "p-value"], method="fdr_bh")
     out.loc[:, "fdr"] = fdr
     return {"Uauc": Uauc, "Upval": Up, "summary": out}

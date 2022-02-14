@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from .console import console
-from .stubs import PLIERResults
+from .PLIERRes import PLIERResults
 
 
 def nameB(
@@ -55,8 +55,7 @@ def nameB(
             names.append(
                 f"{i+1},"
                 + ",".join(
-                    plierRes.U
-                    .iloc[:, i]
+                    plierRes.U.iloc[:, i]
                     .sort_values(ascending=False)
                     .where(lambda x: x > 0)
                     .index[0:top]

@@ -3,7 +3,7 @@ import pandas as pd
 from icontract import require
 
 from .getCutoff import getCutoff
-from .stubs import PLIERResults
+from .PLIERRes import PLIERResults
 
 
 @require(lambda ngenes: ngenes > 0)

@@ -8,14 +8,13 @@ from statsmodels.stats.multitest import multipletests
 
 from .AUC import AUC
 from .copyMat import copyMat
-from .stubs import PLIERResults
+from .PLIERRes import PLIERResults
 from .utils import crossprod, tcrossprod
 
 
 def getAUC(
     plierRes: PLIERResults, data: pd.DataFrame, priorMat: pd.DataFrame
 ) -> Dict[str, pd.DataFrame]:
-    B = plierRes.B
     Z = plierRes.Z
     Zcv = copyMat(Z)
     k = Z.shape[1]
@@ -66,9 +65,9 @@ def getAUC(
                             "AUC": [aucres["auc"]],
                             "p-value": [aucres["pval"]],
                         }
-                    )
+                    ),
                 ],
-                axis=0
+                axis=0,
             )
 
             Uauc.loc[j, i] = aucres["auc"]

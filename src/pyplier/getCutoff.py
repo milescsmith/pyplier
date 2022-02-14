@@ -1,7 +1,6 @@
 from typing import Dict
-import pandas as pd
 
-from .stubs import PLIERResults
+import pandas as pd
 
 
 def getCutoff(aucRes: Dict[str, pd.DataFrame], fdr_cutoff: float = 0.01) -> float:

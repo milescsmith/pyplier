@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from pyplier.getCutoff import getCutoff
-from pyplier.stubs import PLIERResults
+from pyplier.PLIERRes import PLIERResults
 
 
 @pytest.fixture

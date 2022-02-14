@@ -3,62 +3,73 @@ from math import floor
 
 import numpy as np
 import pandas as pd
-from icontract import ensure, require
+from icontract import require
 from numpy.random import default_rng
 from rich import print as rprint
 from scipy.linalg import solve, svd
 from sklearn.utils.extmath import randomized_svd
 
 from .commonRows import commonRows
-from .num_pc import num_pc
-from .pinv_ridge import pinv_ridge
-from .solveU import solveU
-from .stubs import PLIERResults
-from .utils import crossprod, rowNorm, setdiff, tcrossprod
 from .crossVal import crossVal
 from .getAUC import getAUC
 from .nameB import nameB
+from .num_pc import num_pc
+from .pinv_ridge import pinv_ridge
+from .solveU import solveU
+from .PLIERRes import PLIERResults
+from .utils import crossprod, rowNorm, setdiff, tcrossprod
+
+
+def is_interactive() -> bool:
+    import __main__ as main
+    return not hasattr(main, '__file__')
+
+
+if is_interactive():
+    from tqdm.notebook import trange, tqdm
+else:
+    from tqdm import trange, tqdm
 
 
 @require(lambda pathwaySelection: pathwaySelection in ("complete", "fast"))
 def PLIER(
-  data: pd.DataFrame,
-  priorMat: pd.DataFrame,
-  svdres=None,
-  num_LVs: float=None,
-  L1: float=None,
-  L2: float=None,
-  L3: float=None,
-  frac: float=0.7,
-  max_iter: int=350,
-  trace: bool=False,
-  scale: bool=True,
-  Chat=None,
-  maxPath: int=10,
-  doCrossval: bool=True,
-  penalty_factor: np.ndarray=None,
-  glm_alpha: float=0.9,
-  minGenes: int=10,
-  tol: float=1e-06,
-  seed: int=123456,
-  allGenes: bool=False,
-  rseed: int=None,
-  pathwaySelection: str="complete"
-  ):
-    """"Main PLIER function
+    data: pd.DataFrame,
+    priorMat: pd.DataFrame,
+    svdres=None,
+    num_LVs: float = None,
+    L1: float = None,
+    L2: float = None,
+    L3: float = None,
+    frac: float = 0.7,
+    max_iter: int = 350,
+    trace: bool = False,
+    scale: bool = True,
+    Chat=None,
+    maxPath: int = 10,
+    doCrossval: bool = True,
+    penalty_factor: np.ndarray = None,
+    glm_alpha: float = 0.9,
+    minGenes: int = 10,
+    tol: float = 1e-06,
+    seed: int = 123456,
+    allGenes: bool = False,
+    rseed: int = None,
+    pathwaySelection: str = "complete",
+):
+    """ "Main PLIER function
 
     Parameters
     ----------
     data : pd.DataFrame
-        the data to be processed with genes in rows and samples in columns. 
+        the data to be processed with genes in rows and samples in columns.
         Should be z-scored or set scale=True
     priorMat : pd.DataFrame
-        the binary prior information matrix with genes in rows and 
+        the binary prior information matrix with genes in rows and
         pathways/genesets in columns
     svdres : [type], optional
         Pre-computed result of the svd decomposition for data, by default None
     num_LVs : float, optional
-        The number of latent variables to return, leave as None to be set 
+        The number of latent variables to return, leave as None to be set
         automatically using the num_pc 'elbow' method, by default None
     L1 : float, optional
         L1 constant, leave as None to automatically select a value., by default None
@@ -102,13 +113,12 @@ def PLIER(
     [type]
         [description]
     """
-    
 
     if penalty_factor is None:
-        penalty_factor = range(priorMat.shape[1])
+        penalty_factor = np.ones(priorMat.shape[1])
 
     if scale:
-        Y = rowNorm(arr=data)
+        Y = rowNorm(data)
     else:
         Y = data
 
@@ -116,47 +126,48 @@ def PLIER(
         if not allGenes:
             cm = commonRows(data, priorMat)
             rprint(f"Selecting common genes: {len(cm)}")
-            priorMat = priorMat.loc[cm,:]
-            Y = Y.loc[cm,:]
+            priorMat = priorMat.loc[cm, :]
+            Y = Y.loc[cm, :]
         else:
             extra_genes = setdiff(data.index, priorMat.index)
             eMat = pd.DataFrame(
                 data=np.zeros((len(extra_genes), priorMat.shape[1])),
                 columns=priorMat.columns,
                 index=extra_genes,
-                )
-            priorMat = pd.concat([priorMat,eMat], axis=0)
-            priorMat = priorMat.loc[data.index,:]
+            )
+            priorMat = pd.concat([priorMat, eMat], axis=0)
+            priorMat = priorMat.loc[data.index, :]
 
-    numGenes = priorMat.sum(axis='rows') # colsums
+    numGenes = priorMat.sum(axis="rows")  # colsums
 
     heldOutGenes = dict()
     iibad = numGenes[numGenes < minGenes].index
-    priorMat.loc[:,iibad] = 0
+    priorMat.loc[:, iibad] = 0
     rprint(f"Removing {len(iibad)} pathways with too few genes")
     if doCrossval:
         priorMatCV = priorMat
         if seed is not None:
             random.seed(seed)
-        for j in range(priorMatCV.shape[1]):
-            current_col = priorMatCV.iloc[:,j]
-            iipos = [current_col.index.get_loc(_) for _ in current_col[current_col > 0].index] # need the row number, not the row name
-            
-            iiposs = random.choices(iipos, k=len(iipos)/5)
+        for j in trange(priorMatCV.shape[1]):
+            current_col = priorMatCV.iloc[:, j]
+            iipos = [
+                current_col.index.get_loc(_) for _ in current_col[current_col > 0].index
+            ]  # need the row number, not the row name
+
+            iiposs = random.choices(iipos, k=floor(len(iipos) / 5))
             priorMatCV.iloc[iiposs, j] = 0
-            heldOutGenes[priorMat.columns[j]] = priorMat.index[iiposs]
+            heldOutGenes[priorMat.columns[j]] = list(priorMat.index[iiposs])
         C = priorMatCV
     else:
         C = priorMat
 
     ns = data.shape[1]
     Bdiff = -1
-    BdiffTrace = np.ndarray((0,),dtype=np.float64)
+    BdiffTrace = np.ndarray((0,), dtype=np.float64)
     BdiffCount = 0
     if Chat is None:
         Cp = crossprod(C)
         Chat = pinv_ridge(Cp, 5) @ C.transpose()
-    YsqSum = (Y**2).to_numpy().sum()
     # compute svd and use that as the starting point
 
     if (svdres is not None) and (svdres["v"] != Y.shape[1]):
@@ -169,13 +180,19 @@ def PLIER(
     if svdres is None:
         svdres = dict()
         rprint("Computing SVD")
-        if (ns > 500):
+        if ns > 500:
             rprint("Using rsvd")
-            svdres["u"], svdres["d"], svdres["v"] = randomized_svd(M=Y.values, n_components = min(ns, max(200, ns / 4)), n_iter = 3)
+            svdres["u"], svdres["d"], svdres["v"] = randomized_svd(
+                M=Y.values, n_components=min(ns, max(200, ns / 4)), n_iter=3
+            )
         else:
-            svdres["u"], svdres["d"], svdres["v"] = svd(Y, lapack_driver='gesdd') # the gesvd driver flips the sign for components > 6 in the v matrix as compared to R's svd function
+            svdres["u"], svdres["d"], svdres["v"] = svd(
+                Y, lapack_driver="gesdd"
+            )  # the gesvd driver flips the sign for components > 6 in the v matrix as compared to R's svd function
         rprint("Done")
-        svdres["v"] = svdres["v"].transpose() # as compared to the output from R's svd, the v matrix is transposed.  Took me too long to figure this one out.
+        svdres["v"] = svdres[
+            "v"
+        ].transpose()  # as compared to the output from R's svd, the v matrix is transposed.  Took me too long to figure this one out.
 
     if num_LVs is None:
         num_LVs = num_pc(svdres) * 2
@@ -183,42 +200,43 @@ def PLIER(
         rprint(f"The number of LVs is set to {num_LVs}")
 
     if L2 is None:
-        L2 = svdres[["d"]][num_LVs]
+        L2 = svdres["d"][num_LVs]
         rprint(f"L2 is set to {L2}")
 
     if L1 is None:
         L1 = L2 / 2
         rprint(f"L1 is set to {L1}")
 
-    B = (svdres["v"][0:Y.shape[1], 0:num_LVs] @ np.diag(svdres["d"][0:num_LVs])).transpose()
+    B = (
+        svdres["v"][0 : Y.shape[1], 0:num_LVs] @ np.diag(svdres["d"][0:num_LVs])
+    ).transpose()
 
     # following two lines are equivalent to R's diag(x)
     # numpy.fill_diagonal modifies in place and does not
     # return a value, thus this workaround
-    diag_mat = np.zeros((num_LVs,num_LVs))
-    np.fill_diagonal(diag_mat)
-    
+    diag_mat = np.zeros((num_LVs, num_LVs))
+    np.fill_diagonal(diag_mat, val=1)
+
     # for R's solve(), if b is missing, it uses the identity matrix of a
     # scipy.linalg.solve does not have a default for b, so just give it one
-    Z = np.dot(
-        np.dot(Y, B.T),
-        solve(a=np.dot(B,B.T) + L1 * diag_mat, b=diag_mat)
-    )
+    Z = pd.DataFrame(np.dot(np.dot(Y, B.T), solve(a=np.dot(B, B.T) + L1 * diag_mat, b=diag_mat)))
 
     Z = Z.where(cond=lambda x: x > 0, other=0)
-    
+
     if rseed is not None:
         rprint("using random start")
         random.seed(rseed)
-        
+
         rng = default_rng()
-        rng.shuffle(B, axis=1) # B = t(apply(B, 1, sample))
-        rng.shuffle(Z, axis=0) # Z = apply(Z, 2, sample)
+        rng.shuffle(B, axis=1)  # B = t(apply(B, 1, sample))
+        rng.shuffle(Z, axis=0)  # Z = apply(Z, 2, sample)
         Z = Z.transpose()
 
-    U = np.zeros((C.shape[1], num_LVs)) # matrix(0, nrow = ncol(C), ncol = num_LVs)
-    
-    rprint(f"errorY (SVD based:best possible) = {((Y - np.dot(Z, B))**2).to_numpy().mean():.4f}")
+    U = np.zeros((C.shape[1], num_LVs))  # matrix(0, nrow = ncol(C), ncol = num_LVs)
+
+    rprint(
+        f"errorY (SVD based:best possible) = {((Y - np.dot(Z, B))**2).to_numpy().mean():.4f}"
+    )
 
     iter_full_start = iter_full = 20
 
@@ -227,55 +245,68 @@ def PLIER(
     else:
         L3_given = False
 
-    for i in range(max_iter):
-        if (i >= iter_full_start):
-            if (i == iter_full and not L3_given):
-            # update L3 to the target fraction
-                Ulist = solveU(Z, Chat, C, penalty_factor, pathwaySelection, glm_alpha, maxPath, target_frac = frac)
-                U = Ulist[["U"]]
-                L3 = Ulist[["L3"]]
+    for i in trange(max_iter):
+        if i >= iter_full_start:
+            if i == iter_full and not L3_given:
+                # update L3 to the target fraction
+                Ulist = solveU(
+                    Z,
+                    Chat,
+                    C,
+                    penalty_factor,
+                    pathwaySelection,
+                    glm_alpha,
+                    maxPath,
+                    target_frac=frac,
+                )
+                U = Ulist["U"]
+                L3 = Ulist["L3"]
                 rprint(f"New L3 is {L3}")
                 iter_full = iter_full + iter_full_start
             else:
-                U = solveU(Z, Chat, C, penalty_factor, pathwaySelection, glm_alpha, maxPath, L3 = L3)
-        
+                U = solveU(
+                    Z,
+                    Chat,
+                    C,
+                    penalty_factor,
+                    pathwaySelection,
+                    glm_alpha,
+                    maxPath,
+                    L3=L3,
+                )["U"]
+
             Z1 = tcrossprod(Y, B)
             Z2 = L1 * (C @ U)
-            
+
             Z1_nonzero = np.argwhere(np.asarray(Z1.T.stack()) > 0).flatten()
             Z2_nonzero = np.argwhere(np.asarray(Z2.T.stack()) > 0).flatten()
-            
+
             ratio = np.median(
-                np.divide(
-                    Z2,
-                    np.asarray(Z1)
-                ).T
-                .stack()
-                .values[
-                    np.intersect1d(
-                        Z2_nonzero,
-                        Z1_nonzero
-                        )
-                    ]
-                )
-            
-            Z = (Z1 + Z2) @ solve(tcrossprod(B) + L1 * diag_mat)
-            # TODO: YOU ARE HERE
+                np.divide(Z2, np.asarray(Z1))
+                .T.stack()
+                .values[np.intersect1d(Z2_nonzero, Z1_nonzero)]
+            )
+
+            Z = (Z1 + Z2) @ solve(a=(tcrossprod(B) + L1 * diag_mat), b=diag_mat)
         else:
-            Z = tcrossprod(Y, B) @ solve(tcrossprod(B) + L1 * diag_mat)
+            Z = tcrossprod(Y, B) @ solve(a=(tcrossprod(B) + L1 * diag_mat), b=diag_mat)
 
         Z[Z < 0] = 0
 
-        oldB = B
-        B = solve(Z.trasnpose() @ Z + L2 * diag_mat) @ Z.transpose() @ Y
+        oldB = B.copy()
+        B = solve(a=(Z.transpose() @ Z + L2 * diag_mat),b=diag_mat) @ Z.transpose() @ Y
 
-        Bdiff = sum((B - oldB)**2) / sum(B**2)
-        BdiffTrace = BdiffTrace.append(Bdiff)
-        
+        Bdiff = ((B - oldB) ** 2).to_numpy().sum() / (B**2).to_numpy().sum()
+        BdiffTrace = np.append(BdiffTrace, Bdiff)
+
         if trace & (i >= iter_full_start):
-            rprint(f"iter {i} errorY = {np.mean((Y - Z @ B)**2):.4f} prior information ratio= {round(ratio,2)} Bdiff = {Bdiff:.4f} Bkappa= {np.linalg.cond(B):.4f};pos. col. U = {sum(U.sum(axis='index') > 0)}")
+            rprint(
+                f"iter {i} errorY = {np.mean((Y - Z @ B)**2):.4f} prior information ratio= {round(ratio,2)} Bdiff = {Bdiff:.4f} Bkappa= {np.linalg.cond(B):.4f};pos. col. U = {sum(U.sum(axis='index') > 0)}"
+            )
         elif trace:
-            rprint(f"iter {i} errorY = {np.mean((Y - Z @ B)**2):.4f} Bdiff = {np.linalg.cond(Bdiff):.4f} Bkappa = {np.linalg.cond(B):.4f}")
+            rprint(
+                f"iter {i} errorY = {np.mean((Y - Z @ B)**2):.4f} Bdiff = {np.linalg.cond(Bdiff):.4f} Bkappa = {np.linalg.cond(B):.4f}"
+            )
 
         if (i > 52) and (Bdiff > BdiffTrace[i - 50]):
             BdiffCount += 1
@@ -283,7 +314,7 @@ def PLIER(
         elif BdiffCount > 1:
             BdiffCount -= 1
 
-        if (Bdiff < tol):
+        if Bdiff < tol:
             rprint(f"converged at iteration {i}")
             break
         if BdiffCount > 5:
@@ -292,23 +323,24 @@ def PLIER(
 
     U.index = priorMat.columns
     U.columns = [f"LV{_+1}" for _ in range(num_LVs)]
+    Z.columns = [f"LV{_+1}" for _ in range(num_LVs)]
 
     B.index = [f"LV{_+1}" for _ in range(num_LVs)]
 
     out = PLIERResults(
-        residual = (Y - Z @ B),
-        B = B,
-        Z = Z,
-        U = U,
-        C = C,
-        L1 = L1,
-        L2 = L2,
-        L3 = L3,
-        heldOutGenes = heldOutGenes
-        )
-        
+        residual=(Y - (Z.values @ B.values)),
+        B=B,
+        Z=Z,
+        U=U,
+        C=C,
+        L1=L1,
+        L2=L2,
+        L3=L3,
+        heldOutGenes=heldOutGenes,
+    )
+
     if doCrossval:
-        outAUC = crossVal(out, Y, priorMat, priorMatCV)
+        outAUC = crossVal(plierRes=out, priorMat=priorMat, priorMatcv=priorMatCV)
     else:
         rprint("Not using cross-validation. AUCs and p-values may be over-optimistic")
         outAUC = getAUC(out, Y, priorMat)
@@ -320,6 +352,6 @@ def PLIER(
     tt = U.max(axis="index")
     rprint(f"There are {sum(tt > 0.7)} LVs with AUC > 0.70")
 
-    rownames(out.B) = nameB(out)
+    out.B.index = nameB(out)
 
     return out
