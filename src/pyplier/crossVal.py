@@ -1,4 +1,5 @@
 from typing import Dict
+from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd
@@ -29,33 +30,32 @@ def crossVal(
     Uauc = copyMat(df=plierRes.U, zero=True)
     Up = pd.DataFrame(np.ones(shape=plierRes.U.shape))
 
-    plierRes.to_disk("crossval_plierres.json")
     for i in tqdm(ii):
-        iipath = plierRes.U.loc[(plierRes.U.loc[:, i] > 0), i].index
-        if len(iipath) > 1:
-            for j in tqdm(iipath):
-                iiheldout = (
-                    pd.concat([priorMat.loc[:, j], priorMatcv.loc[:, j]], axis=1)
-                    .apply(
-                        lambda x: True
-                        if (x[0] == 0) or ((x[0] > 0) and (x[1] == 0))
-                        else np.nan,  # use np.nan instead of False so that we can drop entries in the chain
-                        axis=1,
-                    )
-                    .dropna()
-                    .index
+    iipath = plierRes.U.loc[(plierRes.U.loc[:, i] > 0), i].index
+    if len(iipath) > 1:
+        for j in tqdm(iipath):
+            iiheldout = (
+                pd.concat([priorMat.loc[:, j], priorMatcv.loc[:, j]], axis=1)
+                .apply(
+                    lambda x: True
+                    if (x[0] == 0) or ((x[0] > 0) and (x[1] == 0))
+                    else np.nan,  # use np.nan instead of False so that we can drop entries in the chain
+                    axis=1,
                 )
-                aucres = AUC(
-                    priorMat.loc[iiheldout, j], plierRes.Z.loc[iiheldout, i]
-                )
-                out_dict[j] = {
-                    "pathway": j,
-                    "LV index": i,
-                    "AUC": aucres["auc"],
-                    "p-value": aucres["pval"],
-                }
-                Uauc.loc[j, i] = aucres["auc"]
-                Up.loc[j, i] = aucres["pval"]
+                .dropna()
+                .index
+            )
+            aucres = AUC(
+                priorMat.loc[iiheldout, j], plierRes.Z.loc[iiheldout, i]
+            )
+            out_dict[j] = {
+                "pathway": j,
+                "LV index": i,
+                "AUC": aucres["auc"],
+                "p-value": aucres["pval"],
+            }
+            Uauc.loc[j, i] = aucres["auc"]
+            Up.loc[j, i] = aucres["pval"]
 
         else:
             j = iipath
@@ -71,14 +71,28 @@ def crossVal(
                 .index
             )
             aucres = AUC(priorMat.loc[iiheldout, j], plierRes.Z.loc[iiheldout, i])
-            out_dict[j] = {
-                "pathway": j,
-                "LV index": i,
-                "AUC": aucres["auc"],
-                "p-value": aucres["pval"],
-            }
-            Uauc.loc[j, i] = aucres["auc"]
-            Up.loc[j, i] = aucres["pval"]
+            print(f"j: {j}")
+            print(f"i: {i}")
+            if isinstance(j, Iterable):
+                for _ in j:
+                    out_dict[_] = {
+                        "pathway": _,
+                        "LV index": i,
+                        "AUC": aucres["auc"],
+                        "p-value": aucres["pval"],
+                    }
+                    Uauc.loc[_, i] = aucres["auc"]
+                    Up.loc[_, i] = aucres["pval"]
+            elif isinstance(j, str):
+                out_dict[j] = {
+                    "pathway": j,
+                    "LV index": i,
+                    "AUC": aucres["auc"],
+                    "p-value": aucres["pval"],
+                }
+                Uauc.loc[j, i] = aucres["auc"]
+                Up.loc[j, i] = aucres["pval"]
+
     out = pd.DataFrame.from_dict(out_dict, orient="index")
     _, fdr, *_ = multipletests(out.loc[:, "p-value"], method="fdr_bh")
     out.loc[:, "fdr"] = fdr
