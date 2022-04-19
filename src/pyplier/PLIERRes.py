@@ -38,6 +38,26 @@ class PLIERResults(object):
         self.Up = Up
         self.summary = summary
 
+    def __repr__(self) -> str:
+        return (
+            f"B : {self.B.shape[0]} rows x {self.B.shape[1]} columns\n"
+            f"Z : {self.Z.shape[0]} rows x {self.Z.shape[1]} columns\n"
+            f"U : {self.U.shape[0]} rows x {self.U.shape[1]} columns\n"
+            f"C : {self.C.shape[0]} rows x {self.C.shape[1]} columns\n"
+            f"heldOutGenes: {len(self.heldOutGenes)}\n"
+            f"withPrior: {len(self.withPrior)}\n"
+            f"Uauc: {self.Uauc.shape[0]} rows x {self.Uauc.shape[1]} columns\n"
+            f"Up: {self.Up.shape[0]} rows x {self.Up.shape[1]} columns\n"
+            f"summary: {self.summary.shape[0]} rows x {self.summary.shape[1]} columns\n"
+            f"residual: {self.residual.shape[0]} rows x {self.residual.shape[1]} columns\n"
+            f"L1 is set to {self.L1:.4f}\n"
+            f"L2 is set to {self.L2:.4f}\n"
+            f"L3 is set to {self.L3:.4f}"
+        )
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
     def to_dict(self):
         return {
             "B": self.B.to_dict(),

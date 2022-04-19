@@ -1,10 +1,15 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from scipy.stats import mannwhitneyu, norm
+from scipy.optimize import brentq
+from scipy.stats import mannwhitneyu, norm, rankdata
+from typeguard import typechecked
+
+from .console import console
 
 
+@typechecked
 def AUC(labels: pd.Series, values: pd.Series) -> Dict[str, float]:
     posii = labels[labels > 0]
     negii = labels[labels <= 0]
@@ -14,7 +19,9 @@ def AUC(labels: pd.Series, values: pd.Series) -> Dict[str, float]:
     negval = values[negii.index]
     if posn > 0 and negn > 0:
         statistic, pvalue = mannwhitneyu(posval, negval, alternative="greater")
-        conf_int_low, conf_int_high = mannwhitneyu_conf_int(posval, negval)
+        conf_int_low, conf_int_high = mannwhitneyu_conf_int(
+            posval, negval, alternative="greater"
+        )
         res = {
             "low": conf_int_low,
             "high": conf_int_high,
@@ -27,26 +34,95 @@ def AUC(labels: pd.Series, values: pd.Series) -> Dict[str, float]:
     return res
 
 
+@typechecked
 def mannwhitneyu_conf_int(
-    x: np.array, y: np.array, alpha: float = 0.05
+    x: Union[List[float], pd.Series],
+    y: Union[List[float], pd.Series],
+    alpha: float = 0.05,
+    tol_root: float = 1e-4,
+    digits_rank: float = np.inf,
+    correct: bool = False,
+    alternative: str = "two_sided",
 ) -> Tuple[float, float]:
-    """
-    see: https://www.ncbi.nlm.nih.gov/labs/pmc/articles/PMC2545906/pdf/bmj00286-0037.pdf
-    """
-    n = len(x)
-    m = len(y)
+    mumin = min(x) - max(y)
+    mumax = max(x) - min(y)
 
-    N = norm.ppf(1 - alpha / 2)
+    def W(d: float) -> float:
+        dr = np.append(np.subtract(x, d), y)
 
-    diffs = sorted([i - j for i in x for j in y])
+        if np.isinf(digits_rank):
+            dr = rankdata(dr)
+        else:
+            dr = rankdata(round(dr, digits_rank))
 
-    # For an approximate 100(1-a)% confidence interval first calculate K:
-    nm = n * m
-    top = nm * (n + m + 1)
-    right = N * np.sqrt(top / 12)
-    left = (n * m) / 2
-    K = left - right
+        _, nties_ci = np.unique(dr, return_counts=True)
 
-    # The Kth smallest to the Kth largest of the n x m differences
-    # lx and ly should be > ~20
-    return (diffs[round(K)], diffs[len(diffs) - round(K)])
+        dz = (
+            np.sum(dr[range(len(x))])
+            - (len(x) * ((len(x) + 1) / 2))
+            - (len(x) * len(y) / 2)
+        )
+
+        if correct:
+            if alternative == "two_sided":
+                correction_ci = np.sign(dz) * 0.5
+            elif alternative == "greater":
+                correction_ci = 0.5
+            elif alternative == "less":
+                correction_ci = -0.5
+        else:
+            correction_ci = 0
+
+        sigma_ci = np.sqrt(
+            (len(x) * len(y) / 12)
+            * (
+                (len(x) + len(y) + 1)
+                - np.sum(nties_ci**3 - nties_ci)
+                / ((len(x) + len(y)) * (len(x) + len(y) - 1))
+            )
+        )
+
+        if sigma_ci == 0:
+            console.print(
+                "cannot compute confidence interval when all observations are tied"
+            )
+
+        return (dz - correction_ci) / sigma_ci
+
+    def wdiff(d: float, zq: float) -> float:
+        return W(d) - zq
+
+    Wmumin = W(mumin)
+    Wmumax = W(mumax)
+
+    def root(zq: float) -> float:
+        f_lower = Wmumin - zq
+        if f_lower <= 0:
+            return mumin
+
+        f_upper = Wmumax - zq
+        if f_upper >= 0:
+            return mumax
+
+        try:
+            return brentq(wdiff, mumin, mumax, zq, tol_root)
+        except RuntimeError:
+            try:
+                return brentq(wdiff, mumin, mumax, zq, tol_root, maxiter=1000)
+            except RuntimeError:
+                return brentq(wdiff, mumin, mumax, zq, tol_root, maxiter=10000)
+
+    if alternative == "two_sided":
+        lower = root(norm.isf(alpha / 2))
+        upper = root(norm.ppf(alpha / 2))
+        cint = (lower, upper)
+    elif alternative == "greater":
+        lower = root(norm.isf(alpha))
+        cint = (lower, np.PINF)
+    elif alternative == "less":
+        upper = root(norm.ppf(alpha))
+        cint = (np.NINF, upper)
+    else:
+        cint = (np.nan, np.nan)
+
+    return cint

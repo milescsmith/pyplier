@@ -7,7 +7,7 @@ elif version_info[1] >= 9:
 
 import pandas as pd
 import pytest
-from joblib import load
+from json import load
 
 from pyplier.AUC import AUC
 
@@ -16,7 +16,7 @@ from pyplier.AUC import AUC
 def test_labels():
     labels_file = ir.files("tests").joinpath("data", "AUC", "labels.csv.gz")
     with ir.as_file(labels_file) as lf:
-        labels_df = pd.read_csv(lf, index_col=0)
+        labels_df = pd.read_csv(lf, index_col=0).squeeze("columns")
     return labels_df
 
 
@@ -24,13 +24,13 @@ def test_labels():
 def test_values():
     values_file = ir.files("tests").joinpath("data", "AUC", "values.csv.gz")
     with ir.as_file(values_file) as vf:
-        values_df = pd.read_csv(vf, index_col=0)
+        values_df = pd.read_csv(vf, index_col=0).squeeze("columns")
     return values_df
 
 
 @pytest.fixture
 def expected_AUC():
-    expected_file = ir.files("tests").joinpath("data", "AUC", "auc_test_result.pkl")
+    expected_file = ir.files("tests").joinpath("data", "AUC", "auc_test_result.json.gz")
     with ir.as_file(expected_file) as ef:
         expected_res = load(ef)
     return expected_res
@@ -39,6 +39,6 @@ def expected_AUC():
 # @pytest.mark.auc
 def test_AUC(test_labels, test_values, expected_AUC):
     __tracebackhide__ = True
-    test_res = AUC(test_labels.iloc[:, 0], test_values.iloc[:, 0])
+    test_res = AUC(test_labels, test_values)
 
     assert test_res == expected_AUC

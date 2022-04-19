@@ -9,14 +9,15 @@ try:
 except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 
-# from .commonRows import commonRows
 # from .num_pc import num_pc
 # from .pinv_ridge import pinv_ridge
 # from .solveU import solveU
 # from .utils import crossprod, rowNorm, setdiff, tcrossprod
 
-from .logger import setup_logging
 import logging
+
+from .logger import setup_logging
+
 plier_logger = setup_logging("pyplier")
 
 

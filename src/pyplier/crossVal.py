@@ -1,13 +1,12 @@
-from typing import Dict
 from collections.abc import Iterable
+from typing import Dict
 
 import numpy as np
 import pandas as pd
 from statsmodels.stats.multitest import multipletests
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from .AUC import AUC
-from .copyMat import copyMat
 from .PLIERRes import PLIERResults
 
 
@@ -27,53 +26,50 @@ def crossVal(
     )
     out_dict = dict()
     ii = plierRes.U.loc[:, plierRes.U.sum(axis=0) > 0].columns
-    Uauc = copyMat(df=plierRes.U, zero=True)
-    Up = pd.DataFrame(np.ones(shape=plierRes.U.shape))
+    Uauc = pd.DataFrame(
+        np.zeros(shape=plierRes.U.shape),
+        index=plierRes.U.index,
+        columns=plierRes.U.columns,
+    )
+    Up = pd.DataFrame(
+        np.ones(shape=plierRes.U.shape),
+        index=plierRes.U.index,
+        columns=plierRes.U.columns,
+    )
 
     for i in tqdm(ii):
-    iipath = plierRes.U.loc[(plierRes.U.loc[:, i] > 0), i].index
-    if len(iipath) > 1:
-        for j in tqdm(iipath):
-            iiheldout = (
-                pd.concat([priorMat.loc[:, j], priorMatcv.loc[:, j]], axis=1)
-                .apply(
-                    lambda x: True
-                    if (x[0] == 0) or ((x[0] > 0) and (x[1] == 0))
-                    else np.nan,  # use np.nan instead of False so that we can drop entries in the chain
-                    axis=1,
+        iipath = plierRes.U.loc[(plierRes.U.loc[:, i] > 0), i].index
+        if len(iipath) > 1:
+            for j in tqdm(iipath):
+                a = (
+                    priorMat.loc[:, iipath]
+                    .sum(axis=1)
+                    .where(lambda x: x == 0)
+                    .dropna()
+                    .index
                 )
-                .dropna()
-                .index
-            )
-            aucres = AUC(
-                priorMat.loc[iiheldout, j], plierRes.Z.loc[iiheldout, i]
-            )
-            out_dict[j] = {
-                "pathway": j,
-                "LV index": i,
-                "AUC": aucres["auc"],
-                "p-value": aucres["pval"],
-            }
-            Uauc.loc[j, i] = aucres["auc"]
-            Up.loc[j, i] = aucres["pval"]
+                b = priorMat.loc[:, j].where(lambda x: x > 0).dropna().index
+                c = priorMatcv.loc[:, j].where(lambda x: x == 0).dropna().index
+                iiheldout = a.union(b.intersection(c))
+                aucres = AUC(priorMat.loc[iiheldout, j], plierRes.Z.loc[iiheldout, i])
+                out_dict[j] = {
+                    "pathway": j,
+                    "LV index": i,
+                    "AUC": aucres["auc"],
+                    "p-value": aucres["pval"],
+                }
+                Uauc.loc[j, i] = aucres["auc"]
+                Up.loc[j, i] = aucres["pval"]
 
         else:
-            j = iipath
-            iiheldout = (
-                pd.concat([priorMat.loc[:, j], priorMatcv.loc[:, j]], axis=1)
-                .apply(
-                    lambda x: True
-                    if (x[0] == 0) or ((x[0] > 0) and (x[1] == 0))
-                    else np.nan,
-                    axis=1,
-                )
-                .dropna()
-                .index
-            )
+            j = iipath[0]
+            a = priorMat.loc[:, iipath].where(lambda x: x == 0).dropna().index
+            b = priorMat.loc[:, j].where(lambda x: x > 0).dropna().index
+            c = priorMatcv.loc[:, j].where(lambda x: x == 0).dropna().index
+            iiheldout = a.union(b.intersection(c))
+
             aucres = AUC(priorMat.loc[iiheldout, j], plierRes.Z.loc[iiheldout, i])
-            print(f"j: {j}")
-            print(f"i: {i}")
-            if isinstance(j, Iterable):
+            if isinstance(j, Iterable) and not isinstance(j, str):
                 for _ in j:
                     out_dict[_] = {
                         "pathway": _,
@@ -95,5 +91,5 @@ def crossVal(
 
     out = pd.DataFrame.from_dict(out_dict, orient="index")
     _, fdr, *_ = multipletests(out.loc[:, "p-value"], method="fdr_bh")
-    out.loc[:, "fdr"] = fdr
+    out.loc[:, "FDR"] = fdr
     return {"Uauc": Uauc, "Upval": Up, "summary": out}

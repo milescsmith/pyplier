@@ -1,10 +1,36 @@
 # Changelog
 
+## [0.8.0] - 2022-04-19
+
+### Added
+
+- New version of mannwhitney_conf_u, which is a direct translation of the R
+code used in the portion of `stats::wilcox.test()` that generates the
+confidence interval for `PLIER::AUC()`
+- `__repr__()` method to the PLIERRes class
+
+### Changed
+
+- Simpler version of solveU (at least temporarily)
+- Started using typechecked
+- Overhaul `crossVal()`
+
+### Fixes
+
+- `plier()` now runs and appears to do so essentially correctly; however,
+at current, it reports fewer identified LVs than {PLIER} does (about half
+as many)
+
+### Removed
+
+- Got rid of `commonRows()` as it was unnecessary
+
 ## [0.7.0] - 2022-02-08
 
-## Added
+### Added
 
-- First draft of the main PLIER function
+- First draft of the main PLIER function, though it 
+
 
 ### Changed
 

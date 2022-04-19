@@ -29,22 +29,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# import logging
-# import os
-
-# _previous_memory_usage = None
-# cupcake_logger.addHandler(logging.StreamHandler())  # Logs go to stderr
-# cupcake_logger.handlers[-1].setFormatter(logging.Formatter("%(message)s"))
-# cupcake_logger.handlers[-1].setLevel("INFO")
-
-
-# def get_logger(name):
-#     """\
-#     Creates a child logger that delegates to cupcake_logger
-#     instead to logging.root
-#     """
-#     return cupcake_logger.manager.getLogger(name)
-
 
 import logging
 from typing import Optional

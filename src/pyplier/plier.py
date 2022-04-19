@@ -8,27 +8,16 @@ from numpy.random import default_rng
 from rich import print as rprint
 from scipy.linalg import solve, svd
 from sklearn.utils.extmath import randomized_svd
+from tqdm.auto import tqdm, trange
 
-from .commonRows import commonRows
 from .crossVal import crossVal
 from .getAUC import getAUC
 from .nameB import nameB
 from .num_pc import num_pc
 from .pinv_ridge import pinv_ridge
-from .solveU import solveU
 from .PLIERRes import PLIERResults
+from .solveU import solveU
 from .utils import crossprod, rowNorm, setdiff, tcrossprod
-
-
-def is_interactive() -> bool:
-    import __main__ as main
-    return not hasattr(main, '__file__')
-
-
-if is_interactive():
-    from tqdm.notebook import trange, tqdm
-else:
-    from tqdm import trange, tqdm
 
 
 @require(lambda pathwaySelection: pathwaySelection in ("complete", "fast"))
@@ -124,7 +113,7 @@ def PLIER(
 
     if (priorMat.shape[0] != data.shape[0]) or not all(priorMat.index == data.index):
         if not allGenes:
-            cm = commonRows(data, priorMat)
+            cm = data.index.intersection(priorMat.index)
             rprint(f"Selecting common genes: {len(cm)}")
             priorMat = priorMat.loc[cm, :]
             Y = Y.loc[cm, :]
@@ -145,21 +134,17 @@ def PLIER(
     priorMat.loc[:, iibad] = 0
     rprint(f"Removing {len(iibad)} pathways with too few genes")
     if doCrossval:
-        priorMatCV = priorMat
+        priorMatCV = priorMat.copy(deep=True)
         if seed is not None:
             random.seed(seed)
-        for j in trange(priorMatCV.shape[1]):
-            current_col = priorMatCV.iloc[:, j]
-            iipos = [
-                current_col.index.get_loc(_) for _ in current_col[current_col > 0].index
-            ]  # need the row number, not the row name
-
-            iiposs = random.choices(iipos, k=floor(len(iipos) / 5))
-            priorMatCV.iloc[iiposs, j] = 0
-            heldOutGenes[priorMat.columns[j]] = list(priorMat.index[iiposs])
-        C = priorMatCV
+        for j in tqdm(priorMatCV.columns):
+            iipos = priorMatCV.loc[:, j].where(lambda x: x > 0).dropna().index
+            iiposs = random.sample(list(iipos), k=round(len(iipos) / 5))
+            priorMatCV.loc[iiposs, j] = 0
+            heldOutGenes[j] = list(iiposs)
+        C = priorMatCV.copy(deep=True)
     else:
-        C = priorMat
+        C = priorMat.copy(deep=True)
 
     ns = data.shape[1]
     Bdiff = -1
@@ -219,7 +204,10 @@ def PLIER(
 
     # for R's solve(), if b is missing, it uses the identity matrix of a
     # scipy.linalg.solve does not have a default for b, so just give it one
-    Z = pd.DataFrame(np.dot(np.dot(Y, B.T), solve(a=np.dot(B, B.T) + L1 * diag_mat, b=diag_mat)))
+    Z = pd.DataFrame(
+        np.dot(np.dot(Y, B.T), solve(a=np.dot(B, B.T) + L1 * diag_mat, b=diag_mat)),
+        index=Y.index,
+    )
 
     Z = Z.where(cond=lambda x: x > 0, other=0)
 
@@ -294,7 +282,7 @@ def PLIER(
         Z[Z < 0] = 0
 
         oldB = B.copy()
-        B = solve(a=(Z.transpose() @ Z + L2 * diag_mat),b=diag_mat) @ Z.transpose() @ Y
+        B = solve(a=(Z.transpose() @ Z + L2 * diag_mat), b=diag_mat) @ Z.transpose() @ Y
 
         Bdiff = ((B - oldB) ** 2).to_numpy().sum() / (B**2).to_numpy().sum()
         BdiffTrace = np.append(BdiffTrace, Bdiff)
@@ -349,7 +337,7 @@ def PLIER(
     out.Uauc = outAUC["Uauc"]
     out.Up = outAUC["Upval"]
     out.summary = outAUC["summary"]
-    tt = U.max(axis="index")
+    tt = out.Uauc.max(axis="index")
     rprint(f"There are {sum(tt > 0.7)} LVs with AUC > 0.70")
 
     out.B.index = nameB(out)

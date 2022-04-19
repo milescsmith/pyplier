@@ -5,8 +5,10 @@ from typing import Optional, TypedDict
 import numpy as np
 import pandas as pd
 from glmnet import ElasticNet
+from tqdm.auto import trange
 
 from . import plier_logger as logger
+
 
 class solveUReturnDict(TypedDict):
     U: pd.DataFrame
@@ -57,7 +59,7 @@ def solveU(
     Ur = Ur.rank(axis="index", ascending=False)  # rank
     Urm = Ur.min(axis=1)
 
-    # U = np.zeros(shape = (priorMat.shape[1], Z.shape[1]))
+    U = pd.DataFrame(np.zeros(shape=(priorMat.shape[1], Z.shape[1])))
     if L3 is None:
         lambdas = np.exp(np.arange(start=-4, stop=-12.125, step=-0.125))
         results = dict()
@@ -91,39 +93,40 @@ def solveU(
             results[i] = deepcopy(gres)
 
         fracs = np.mean(np.where(lMat > 0, 1, 0), axis=1)
-        iibest = np.where(abs(target_frac-fracs) == abs((target_frac-fracs)).min())[0][0]
+        iibest = np.where(abs(target_frac - fracs) == abs((target_frac - fracs)).min())[
+            0
+        ][0]
 
-        try:
-            U = (
-                pd.DataFrame(index=priorMat.columns.set_names("pathway"))
-                .merge(
-                    pd.DataFrame(
-                        data={
-                            i: pd.Series(
-                                data=results[i].coef_path_[:, iibest],
-                                index=Ur.index[results[i].iip].set_names("pathway"),
-                            )
-                            for i in range(Z.shape[1])
-                        },
-                    ),
-                    on="pathway",
-                    how="left",
-                )
-                .fillna(0)
-            )
-        except KeyError:
-            print("oops!")
-            print(pd.DataFrame(
-                data={
-                    i: pd.Series(
-                        data=results[i].coef_path_[:, iibest],
-                        index=Ur.index[results[i].iip],
-                    )
-                    for i in range(Z.shape[1])
-                },
-                ).index.name
-            )
-            print(pd.DataFrame(index=priorMat.columns).index.name)
+        # yeah, so this is not very pythonic, but it matches the R code
+        # TODO: replace this with something like our original attempt
+        for i in trange(Z.shape[1]):
+            U.iloc[results[i].iip, i] = results[i].coef_path_[:, iibest]
+
+        U.index = priorMat.columns
+        U.columns = Z.columns
+        # try:
+        #     U = (pd.DataFrame(
+        #             index=(priorMat.columns.set_names("pathway")).merge(pd.DataFrame(data={
+        #                 i: pd.Series(
+        #                     data=results[i].coef_path_[:, iibest],
+        #                     index=Ur.index[results[i].iip].set_names("pathway")
+        #                     )
+        #                 for i in range(Z.shape[1])
+        #             }, ),
+        #             on="pathway",
+        #             how="left",
+        #         ).fillna(0)))
+        # except KeyError:
+        #     print("oops!")
+        #     print(
+        #         pd.DataFrame(data={
+        #             i: pd.Series(
+        #                 data=results[i].coef_path_[:, iibest],
+        #                 index=Ur.index[results[i].iip],
+        #             )
+        #             for i in range(Z.shape[1])
+        #         }, ).index.name)
+        #     print(pd.DataFrame(index=priorMat.columns).index.name)
 
         # what is the point of this?  It is never used!
         # Utmp = solveU(Z, Chat, priorMat, penalty.factor,
@@ -145,7 +148,7 @@ def solveU(
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 gres = ElasticNet(
-                    lambda_path=[L3*.9, L3, L3*1.1],
+                    lambda_path=[L3 * 0.9, L3, L3 * 1.1],
                     lower_limits=0,
                     standardize=False,
                     fit_intercept=True,
@@ -153,7 +156,7 @@ def solveU(
                     max_features=150,
                 )
 
-            # try:
+                # try:
                 gres.fit(
                     y=Z.iloc[:, i].astype(np.float64).values,
                     X=priorMat.iloc[:, iip].astype(np.float64).values,
@@ -163,9 +166,11 @@ def solveU(
             #     print(f"iip: {iip}")
             #     print(f"sliced: {[penalty_factor[_] for _ in iip]}")
             #     print(f"penalty_factor: {penalty_factor}")
-            
+
             # try:
-            results[i] = pd.Series(data=[_[1] for _ in gres.coef_path_], index=Ur.index[iip])
+            results[i] = pd.Series(
+                data=[_[1] for _ in gres.coef_path_], index=Ur.index[iip]
+            )
             # except AttributeError:
             #     print(dir(gres))
 
@@ -176,10 +181,7 @@ def solveU(
             .merge(
                 pd.DataFrame(
                     {i: results[i] for i in range(Z.shape[1])},
-                ).rename_axis(
-                    index="pathway",
-                    axis="index"
-                    ),
+                ).rename_axis(index="pathway", axis="index"),
                 on="pathway",
                 how="left",
             )
