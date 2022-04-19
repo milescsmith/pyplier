@@ -4,14 +4,14 @@
 
 ### Added
 
-- New version of mannwhitney_conf_u, which is a direct translation of the R
+- New version of `mannwhitney_conf_u()`, which is a direct translation of the R
 code used in the portion of `stats::wilcox.test()` that generates the
 confidence interval for `PLIER::AUC()`
 - `__repr__()` method to the PLIERRes class
 
 ### Changed
 
-- Simpler version of solveU (at least temporarily)
+- Simpler version of `solveU()` (at least temporarily)
 - Started using typechecked
 - Overhaul `crossVal()`
 
@@ -61,7 +61,8 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Import functions into __init__ to simplify intramodule use
 - Add icontract-based function input validation to some functions
 
-
+[0.8.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.7.0..0.8.0
+[0.7.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.2..0.7.0
 [0.6.2]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.1..0.6.2
 [0.6.i]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.0..0.6.1
 [0.6.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/0.6.0
