@@ -1,4 +1,5 @@
 from typing import Dict, List, Tuple, Union
+from math import exp
 
 import numpy as np
 import pandas as pd
@@ -48,6 +49,8 @@ def mannwhitneyu_conf_int(
     mumax = max(x) - min(y)
 
     def W(d: float) -> float:
+        len_x = len(x)
+        len_y = len(y)
         dr = np.append(np.subtract(x, d), y)
 
         if np.isinf(digits_rank):
@@ -58,9 +61,9 @@ def mannwhitneyu_conf_int(
         _, nties_ci = np.unique(dr, return_counts=True)
 
         dz = (
-            np.sum(dr[range(len(x))])
-            - (len(x) * ((len(x) + 1) / 2))
-            - (len(x) * len(y) / 2)
+            np.sum(dr[range(len_x)])
+            - (len_x * ((len_x + 1) / 2))
+            - (len_x * len_y / 2)
         )
 
         if correct:
@@ -74,11 +77,11 @@ def mannwhitneyu_conf_int(
             correction_ci = 0
 
         sigma_ci = np.sqrt(
-            (len(x) * len(y) / 12)
+            (len_x * len_y / 12)
             * (
-                (len(x) + len(y) + 1)
-                - np.sum(nties_ci**3 - nties_ci)
-                / ((len(x) + len(y)) * (len(x) + len(y) - 1))
+                (len_x + len_y + 1)
+                - np.sum(exp(nties_ci, 3) - nties_ci)
+                / ((len_x + len_y) * (len_x + len_y - 1))
             )
         )
 
@@ -87,7 +90,15 @@ def mannwhitneyu_conf_int(
                 "cannot compute confidence interval when all observations are tied"
             )
 
-        return (dz - correction_ci) / sigma_ci
+        try:
+            result = np.divide(np.subtract(dz, correction_ci), sigma_ci)
+        except RuntimeWarning:
+            print(
+                f"dz: {dz}\n"
+                f"correction_ci: {correction_ci}\n"
+                f"sigma_ci: {sigma_ci}\n"
+            )
+        return result
 
     def wdiff(d: float, zq: float) -> float:
         return W(d) - zq

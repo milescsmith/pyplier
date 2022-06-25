@@ -55,7 +55,6 @@ def expected_U_complete() -> pd.DataFrame:
     U_file = ir.files("tests").joinpath("data", "solveU", "U_complete.csv.gz")
     with ir.as_file(U_file) as uf:
         U = pd.read_csv(uf, index_col="pathway")
-    U.columns = np.subtract(U.columns.astype(int), 1).astype("object")
     U = U.astype(np.float64)
     return U
 
@@ -65,7 +64,6 @@ def expected_U_fast() -> pd.DataFrame:
     U_file = ir.files("tests").joinpath("data", "solveU", "U_fast.csv.gz")
     with ir.as_file(U_file) as uf:
         U = pd.read_csv(uf, index_col="pathway")
-    U.columns = np.subtract(U.columns.astype(int), 1).astype("object")
     U = U.astype(np.float64)
     return U
 

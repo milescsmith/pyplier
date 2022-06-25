@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.9.0] - 2022-06-24
+
+### Added
+
+- Unit tests for the `PLIERResults` class
+- Start add use of `structlog`
+- added `__eq__()` method to the `PLIERResults` class
+
+### Changed
+
+- dev container now uses python 3.9
+- Replaced a few math functions in `pyplier.AUC.mannwhitneyu_conf_int()` 
+with their numpy equivalents
+- `pyplier.crossVal.crossVal()` now sets the "pathway" column as the index for
+the `summary` dataframe
+- changed `pyplier.PLIERResults.from_dict()` method to a `classmethod`
+- gzipped several of the testing files
+
+### Fixed
+
+- Fixed column names for testing dataframes in `test_solveU`
+
 ## [0.8.0] - 2022-04-19
 
 ### Added
@@ -61,6 +83,7 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Import functions into __init__ to simplify intramodule use
 - Add icontract-based function input validation to some functions
 
+[0.9.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.8.0..0.9.0
 [0.8.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.7.0..0.8.0
 [0.7.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.2..0.7.0
 [0.6.2]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.1..0.6.2

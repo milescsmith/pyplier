@@ -8,6 +8,7 @@ elif version_info[1] >= 9:
 import pandas as pd
 import pytest
 from json import load
+import gzip
 
 from pyplier.AUC import AUC
 
@@ -32,7 +33,7 @@ def test_values():
 def expected_AUC():
     expected_file = ir.files("tests").joinpath("data", "AUC", "auc_test_result.json.gz")
     with ir.as_file(expected_file) as ef:
-        expected_res = load(ef)
+        expected_res = load(gzip.open(ef))
     return expected_res
 
 

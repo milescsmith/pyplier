@@ -89,7 +89,7 @@ def crossVal(
                 Uauc.loc[j, i] = aucres["auc"]
                 Up.loc[j, i] = aucres["pval"]
 
-    out = pd.DataFrame.from_dict(out_dict, orient="index")
+    out = pd.DataFrame.from_dict(out_dict, orient="index").set_index("pathway")
     _, fdr, *_ = multipletests(out.loc[:, "p-value"], method="fdr_bh")
     out.loc[:, "FDR"] = fdr
     return {"Uauc": Uauc, "Upval": Up, "summary": out}

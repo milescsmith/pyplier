@@ -15,10 +15,28 @@ except PackageNotFoundError:  # pragma: no cover
 # from .utils import crossprod, rowNorm, setdiff, tcrossprod
 
 import logging
+import structlog
 
-from .logger import setup_logging
+plier_logger = structlog.get_logger()
 
-plier_logger = setup_logging("pyplier")
+# create logger
+structlog.configure(
+    processors=[
+        structlog.processors.add_log_level,
+        structlog.processors.StackInfoRenderer(),
+        structlog.dev.set_exc_info,
+        structlog.processors.TimeStamper(),
+        structlog.dev.ConsoleRenderer(),
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(logging.DEBUG),
+    context_class=dict,
+    logger_factory=structlog.PrintLoggerFactory(),
+    cache_logger_on_first_use=False,
+)
+
+# from .logger import setup_logging
+
+# plier_logger = setup_logging("pyplier")
 
 
 def set_verbosity(v: int = 3) -> None:

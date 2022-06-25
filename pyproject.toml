@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyplier"
-version = "0.8.0"
+version = "0.9.0"
 description = "Python reimplementation of PLIER"
 authors = ["milescsmith <mileschristiansmith@gmail.com>"]
 license = "MPL2.0"
@@ -23,6 +23,7 @@ coloredlogs = "^15.0.1"
 glmnet-py = "^0.1.0-beta.2"
 enlighten = "^1.10.2"
 typeguard = "^2.13.3"
+structlog = "^21.5.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "flake8"
@@ -45,6 +46,7 @@ jupyterlab-widgets = "^1.0.2"
 dill = "^0.3.4"
 pyicontract-lint = "^2.1.4"
 yapf = "^0.32.0"
+deepdiff = "^5.8.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
