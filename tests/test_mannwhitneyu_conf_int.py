@@ -5,12 +5,12 @@ if version_info[1] == 8:
 elif version_info[1] >= 9:
     import importlib.resources as ir
 
-import pytest
-import pandas as pd
-import numpy as np
-
 import hypothesis.strategies as st
+import numpy as np
+import pandas as pd
+import pytest
 from hypothesis import assume, given, settings
+
 from pyplier.AUC import mannwhitneyu_conf_int
 
 

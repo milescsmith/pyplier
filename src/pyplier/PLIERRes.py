@@ -4,8 +4,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 class PLIERResults(object):

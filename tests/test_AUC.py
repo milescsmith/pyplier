@@ -5,10 +5,11 @@ if version_info[1] == 8:
 elif version_info[1] >= 9:
     import importlib.resources as ir
 
+import gzip
+from json import load
+
 import pandas as pd
 import pytest
-from json import load
-import gzip
 
 from pyplier.AUC import AUC
 

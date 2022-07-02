@@ -15,6 +15,7 @@ except PackageNotFoundError:  # pragma: no cover
 # from .utils import crossprod, rowNorm, setdiff, tcrossprod
 
 import logging
+
 import structlog
 
 plier_logger = structlog.get_logger()

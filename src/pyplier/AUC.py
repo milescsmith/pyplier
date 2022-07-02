@@ -1,5 +1,5 @@
-from typing import Dict, List, Tuple, Union
 from math import exp
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -61,9 +61,7 @@ def mannwhitneyu_conf_int(
         _, nties_ci = np.unique(dr, return_counts=True)
 
         dz = (
-            np.sum(dr[range(len_x)])
-            - (len_x * ((len_x + 1) / 2))
-            - (len_x * len_y / 2)
+            np.sum(dr[range(len_x)]) - (len_x * ((len_x + 1) / 2)) - (len_x * len_y / 2)
         )
 
         if correct:

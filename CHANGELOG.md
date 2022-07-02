@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0] - 2022-06-26
+
+### Added
+
+- `plierResToMarkers`, `plotMat`, and `plotTopZ`
+
 ## [0.9.0] - 2022-06-24
 
 ### Added
@@ -83,9 +89,10 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Import functions into __init__ to simplify intramodule use
 - Add icontract-based function input validation to some functions
 
-[0.9.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.8.0..0.9.0
-[0.8.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.7.0..0.8.0
-[0.7.0]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.2..0.7.0
-[0.6.2]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.1..0.6.2
-[0.6.i]: https://github.com/olivierlacan/keep-a-changelog/releases/compare/0.6.0..0.6.1
-[0.6.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/0.6.0
+[0.9.0]: https://github.com/milescsmith/pyplier/releases/compare/0.9.0..0.10.0
+[0.9.0]: https://github.com/milescsmith/pyplier/releases/compare/0.8.0..0.9.0
+[0.8.0]: https://github.com/milescsmith/pyplier/releases/compare/0.7.0..0.8.0
+[0.7.0]: https://github.com/milescsmith/pyplier/releases/compare/0.6.2..0.7.0
+[0.6.2]: https://github.com/milescsmith/pyplier/releases/compare/0.6.1..0.6.2
+[0.6.i]: https://github.com/milescsmith/pyplier/releases/compare/0.6.0..0.6.1
+[0.6.0]: https://github.com/milescsmith/pyplier/releases/tag/0.6.0

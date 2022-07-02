@@ -1,5 +1,5 @@
 from sys import version_info
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 if version_info[1] == 8:
     import importlib_resources as ir
@@ -8,8 +8,8 @@ elif version_info[1] >= 9:
 
 import pandas as pd
 import pytest
-from dill import load
 from deepdiff import DeepDiff
+from dill import load
 
 from pyplier.nameB import nameB
 from pyplier.PLIERRes import PLIERResults

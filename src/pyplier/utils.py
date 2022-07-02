@@ -46,5 +46,20 @@ def _(arr: pd.DataFrame) -> pd.DataFrame:
     return arr.apply(lambda x: ((x - np.mean(x)) / np.std(x, ddof=1)), axis=1)
 
 
+@singledispatch
+def colNorm(arr):
+    return arr
+
+
+@colNorm.register
+def _(arr: np.ndarray) -> np.ndarray:
+    return np.apply_along_axis(lambda x: ((x - np.mean(x)) / np.std(x, ddof=1)), 0, arr)
+
+
+@colNorm.register
+def _(arr: pd.DataFrame) -> pd.DataFrame:
+    return arr.apply(lambda x: ((x - np.mean(x)) / np.std(x, ddof=1)), axis=0)
+
+
 def setdiff(list1: List[Any], list2: List[Any]) -> List[Any]:
     return [_ for _ in set(list1) if _ not in list2]

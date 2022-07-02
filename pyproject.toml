@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyplier"
-version = "0.9.0"
+version = "0.10.0"
 description = "Python reimplementation of PLIER"
 authors = ["milescsmith <mileschristiansmith@gmail.com>"]
 license = "MPL2.0"
@@ -24,6 +24,7 @@ glmnet-py = "^0.1.0-beta.2"
 enlighten = "^1.10.2"
 typeguard = "^2.13.3"
 structlog = "^21.5.0"
+seaborn = "^0.11.2"
 
 [tool.poetry.dev-dependencies]
 mypy = "flake8"
