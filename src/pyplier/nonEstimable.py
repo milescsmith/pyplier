@@ -21,5 +21,7 @@ def nonEstimable(x: pd.DataFrame) -> Optional[List[str]]:
 
         if any([_ == "" for _ in notest]):
             return [str(x) if y == "" else y for x, y in enumerate(notest)]
+        else:
+            return notest
     else:
         return None

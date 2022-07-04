@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 
-from .logger import plier_logger
+# from .logger import plier_logger
 from .PLIERRes import PLIERResults
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
@@ -12,9 +12,9 @@ PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 def plierResToMarkers(
     plierRes: PLIERRes, priorMat: pd.DataFrame, num: int = 20, index: List[str] = None
-):
-    ii = plierRes["U"].columns[
-        np.where(plierRes["U"].sum(axis=0) > 0)
+) -> pd.DataFrame:
+    ii = plierRes.U.columns[
+        np.where(plierRes.U.sum(axis=0) > 0)
     ]  # ii <- which(colsums(plierRes$U, parallel = TRUE) > 0)
 
     if index is not None:
@@ -22,7 +22,7 @@ def plierResToMarkers(
     # if !is.null(index):
     #   ii <- intersect(ii, index)
 
-    Zuse = plierRes["Z"].loc[:, ii]  # Zuse <- plierRes$Z[, ii, drop = F]
+    Zuse = plierRes.Z.loc[:, ii]  # Zuse <- plierRes$Z[, ii, drop = F]
 
     # for (i in seq_along(ii)):
     #   lv <- ii[i]
@@ -32,14 +32,14 @@ def plierResToMarkers(
     #   Zuse[genesNotInPath, i] <- 0
 
     for i in tqdm(ii):
-        paths = plierRes["U"].index[np.where(plierRes["U"].loc[:, i] < 0.01)[0]].values
+        paths = plierRes.U.index[np.where(plierRes.U.loc[:, i] < 0.01)[0]].values
         genes = priorMat[(priorMat.loc[:, paths].sum(axis=1) > 0)].index.values
         genesNotInPath = Zuse.index[~Zuse.index.isin(genes)]
         Zuse.loc[genesNotInPath, i] = 0
 
     tag = Zuse.rank(ascending=False)  # tag <- apply(-Zuse, 2, rank)
-    tag.columns = plierRes["B"].index[
-        np.where(plierRes["U"].sum(axis=0) > 0)
+    tag.columns = plierRes.B.index[
+        np.where(plierRes.U.sum(axis=0) > 0)
     ]  # colnames(tag) <- rownames(plierRes$B)[ii]
     iim = tag.min(axis=1)  # iim <- apply(tag, 1, min)
     iig = iim.index[np.where(iim <= num)[0]]  # iig <- which(iim <= num)

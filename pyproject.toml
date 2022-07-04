@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyplier"
-version = "0.10.0"
+version = "0.11.0"
 description = "Python reimplementation of PLIER"
 authors = ["milescsmith <mileschristiansmith@gmail.com>"]
 license = "MPL2.0"

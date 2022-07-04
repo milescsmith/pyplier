@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.11.0] - 2022-07-04
+
+## Added
+
+- `plotTopZallPath()`
+
+## Fixed
+
+- `plotTopZ()` and `solveU()` now properly use PLIERRes members
+
 ## [0.10.0] - 2022-06-26
 
 ### Added
@@ -89,6 +99,7 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Import functions into __init__ to simplify intramodule use
 - Add icontract-based function input validation to some functions
 
+[0.10.0]: https://github.com/milescsmith/pyplier/releases/compare/0.10.0..0.11.0
 [0.9.0]: https://github.com/milescsmith/pyplier/releases/compare/0.9.0..0.10.0
 [0.9.0]: https://github.com/milescsmith/pyplier/releases/compare/0.8.0..0.9.0
 [0.8.0]: https://github.com/milescsmith/pyplier/releases/compare/0.7.0..0.8.0

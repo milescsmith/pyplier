@@ -24,35 +24,32 @@ def plotTopZ(
     *args,
     **kwargs
 ) -> None:
-    data = data.loc[plierRes["Z"].index, :]
-    priorMat = priorMat.loc[plierRes["Z"].index.intersection(priorMat.index), :]
-    plierRes["U"].columns[np.where(plierRes["U"].sum(axis=0) > 0)]
+    data = data.loc[plierRes.Z.index, :]
+    priorMat = priorMat.loc[plierRes.Z.index.intersection(priorMat.index), :]
+    plierRes.U.columns[np.where(plierRes.U.sum(axis=0) > 0)]
 
     if not allLVs:
         if index is not None:
-            ii = (
-                plierRes["U"]
-                .columns[np.where(plierRes["U"].sum(axis=0) > 0)]
-                .intersection(index)
+            ii = plierRes.U.columns[np.where(plierRes.U.sum(axis=0) > 0)].intersection(
+                index
             )
     elif index is not None:
         ii = index
 
-    tmp = plierRes["Z"].loc[:, ii].rank(ascending=False)
+    tmp = plierRes.Z.loc[:, ii].rank(ascending=False)
 
-    nntmp = [tmp.index[np.where(tmp[i] <= top)].values for i in ii]
+    nntmp = [tmp.index[np.where(tmp[i] <= top)[0]].values for i in ii]
     nn = np.concatenate(nntmp)
     nncol = (
-        plierRes["B"]
-        .index[np.where(plierRes["Z"].columns.isin(ii))[0]]
+        plierRes.B.index[np.where(plierRes.Z.columns.isin(ii))[0]]
         .repeat([len(_) for _ in nntmp])
         .str[:30]
     )
     nnpath = pd.concat(
         [
-            priorMat.loc[
-                x, plierRes["U"].loc[plierRes["U"].loc[:, y] > 0, y].index
-            ].sum(axis=1)
+            priorMat.loc[x, plierRes.U.loc[plierRes.U.loc[:, y] > 0, y].index].sum(
+                axis=1
+            )
             > 0
             for x, y in zip(nntmp, ii)
         ],
@@ -80,10 +77,7 @@ def plotTopZ(
             toPlot.iloc[gi, :] = (
                 sm.GLS(
                     toPlot.iloc[gi, :].T,
-                    plierRes["B"]
-                    .drop(index=plierRes["B"].index[0])
-                    .loc[:, toPlot.columns]
-                    .T,
+                    plierRes.B.drop(index=plierRes.B.index[0]).loc[:, toPlot.columns].T,
                 )
                 .fit()
                 .resid.T

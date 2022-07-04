@@ -78,7 +78,7 @@ def mannwhitneyu_conf_int(
             (len_x * len_y / 12)
             * (
                 (len_x + len_y + 1)
-                - np.sum(exp(nties_ci, 3) - nties_ci)
+                - np.sum(np.exp(nties_ci, 3) - nties_ci)
                 / ((len_x + len_y) * (len_x + len_y - 1))
             )
         )
