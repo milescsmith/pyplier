@@ -1,5 +1,4 @@
-from math import exp
-from typing import Dict, List, Tuple, Union
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -11,7 +10,7 @@ from .console import console
 
 
 @typechecked
-def AUC(labels: pd.Series, values: pd.Series) -> Dict[str, float]:
+def AUC(labels: pd.Series, values: pd.Series) -> dict[str, float]:
     posii = labels[labels > 0]
     negii = labels[labels <= 0]
     posn = len(posii)
@@ -37,14 +36,14 @@ def AUC(labels: pd.Series, values: pd.Series) -> Dict[str, float]:
 
 @typechecked
 def mannwhitneyu_conf_int(
-    x: Union[List[float], pd.Series],
-    y: Union[List[float], pd.Series],
+    x: Union[list[float], pd.Series],
+    y: Union[list[float], pd.Series],
     alpha: float = 0.05,
     tol_root: float = 1e-4,
     digits_rank: float = np.inf,
     correct: bool = False,
     alternative: str = "two_sided",
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     mumin = min(x) - max(y)
     mumax = max(x) - min(y)
 

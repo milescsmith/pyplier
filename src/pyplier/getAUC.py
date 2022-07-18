@@ -1,5 +1,4 @@
 from math import floor
-from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -14,7 +13,7 @@ from .utils import crossprod, tcrossprod
 
 def getAUC(
     plierRes: PLIERResults, data: pd.DataFrame, priorMat: pd.DataFrame
-) -> Dict[str, pd.DataFrame]:
+) -> dict[str, pd.DataFrame]:
     Z = plierRes.Z
     Zcv = copyMat(Z)
     k = Z.shape[1]

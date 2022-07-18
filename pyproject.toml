@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyplier"
-version = "0.11.0"
+version = "0.12.0"
 description = "Python reimplementation of PLIER"
 authors = ["milescsmith <mileschristiansmith@gmail.com>"]
 license = "MPL2.0"
@@ -48,6 +48,7 @@ dill = "^0.3.4"
 pyicontract-lint = "^2.1.4"
 yapf = "^0.32.0"
 deepdiff = "^5.8.1"
+bandit = "^1.7.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

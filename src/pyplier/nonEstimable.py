@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import Optional
 
 import pandas as pd
 from scipy.linalg import qr
 
 
-def nonEstimable(x: pd.DataFrame) -> Optional[List[str]]:
+def nonEstimable(x: pd.DataFrame) -> Optional[list[str]]:
 
     p = x.shape[1]
 

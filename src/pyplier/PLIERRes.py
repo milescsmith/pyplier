@@ -2,7 +2,7 @@ import gzip
 import json
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List
+from typing import dict, list
 
 import numpy as np
 import pandas as pd
@@ -18,8 +18,8 @@ class PLIERResults(object):
         L1: float = 0.0,
         L2: float = 0.0,
         L3: float = 0.0,
-        heldOutGenes: Dict[str, List[str]] = defaultdict(list),
-        withPrior: Dict[str, int] = defaultdict(int),
+        heldOutGenes: dict[str, list[str]] = defaultdict(list),
+        withPrior: dict[str, int] = defaultdict(int),
         Uauc: pd.DataFrame = pd.DataFrame(),
         Up: pd.DataFrame = pd.DataFrame(),
         summary: pd.DataFrame = pd.DataFrame(),

@@ -619,3 +619,4 @@ MigrationBackup/
 **/.ipynb_checkpoints
 
 noxfile.py
+pyproject.toml

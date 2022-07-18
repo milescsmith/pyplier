@@ -1,9 +1,10 @@
 from typing import Optional, TypeVar
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+
 from .PLIERRes import PLIERResults
 from .plotMat import plotMat
-import seaborn as sns
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
@@ -49,8 +50,18 @@ def plotU(
     U = U.loc[indexRow, indexCol].apply(replace_below_top, n=top, replace_val=0)
 
     if sort_row:
-        Um = pd.DataFrame({x: np.multiply((U.columns.get_loc(x) + 1) * 100, np.sign(y)) for x, y in U.iteritems()}).max(axis=1)
-        plotMat(U.loc[Um.rank(ascending=False).sort_values().index], row_cluster=False, *args, **kwargs)
+        Um = pd.DataFrame(
+            {
+                x: np.multiply((U.columns.get_loc(x) + 1) * 100, np.sign(y))
+                for x, y in U.iteritems()
+            }
+        ).max(axis=1)
+        plotMat(
+            U.loc[Um.rank(ascending=False).sort_values().index],
+            row_cluster=False,
+            *args,
+            **kwargs
+        )
     else:
         plotMat(U, *args, **kwargs)
 

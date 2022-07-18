@@ -1,11 +1,5 @@
-from sys import version_info
-
-if version_info[1] == 8:
-    import importlib_resources as ir
-elif version_info[1] >= 9:
-    import importlib.resources as ir
-
 import gzip
+import importlib.resources as ir
 from json import load
 
 import pandas as pd

@@ -1,17 +1,11 @@
-from sys import version_info
-from typing import Any, Dict, List
-
-if version_info[1] == 8:
-    import importlib_resources as ir
-elif version_info[1] >= 9:
-    import importlib.resources as ir
+import importlib.resources as ir
+from typing import Any
 
 import pandas as pd
 import pytest
 from deepdiff import DeepDiff
 from dill import load
 
-from pyplier.nameB import nameB
 from pyplier.PLIERRes import PLIERResults
 
 
@@ -113,14 +107,14 @@ def test_plierRes_repr(test_plierRes: PLIERResults) -> None:
 
 
 @pytest.fixture
-def pickled_dict() -> Dict[str, Any]:
+def pickled_dict() -> dict[str, Any]:
     dict_file = ir.files("tests").joinpath("data/plierRes/plierRes_dict.pkl")
     with ir.as_file(dict_file) as df:
         pdt = load(open(df, "rb"))
     return pdt
 
 
-def test_plierRes_to_dict(test_plierRes: PLIERResults, pickled_dict: Dict[str, Any]):
+def test_plierRes_to_dict(test_plierRes: PLIERResults, pickled_dict: dict[str, Any]):
     dict_diff = DeepDiff(
         t1=test_plierRes.to_dict(),
         t2=pickled_dict,
@@ -131,7 +125,7 @@ def test_plierRes_to_dict(test_plierRes: PLIERResults, pickled_dict: Dict[str, A
     assert dict_diff == {}
 
 
-def test_plierRes_from_dict(test_plierRes: PLIERResults, pickled_dict: Dict[str, Any]):
+def test_plierRes_from_dict(test_plierRes: PLIERResults, pickled_dict: dict[str, Any]):
     assert test_plierRes == PLIERResults().from_dict(pickled_dict)
 
 

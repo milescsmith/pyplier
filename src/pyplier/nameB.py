@@ -1,5 +1,3 @@
-from typing import List
-
 import numpy as np
 
 from .console import console
@@ -8,7 +6,7 @@ from .PLIERRes import PLIERResults
 
 def nameB(
     plierRes: PLIERResults, top: int = 1, fdr_cutoff: float = 0.01, use: str = None
-) -> List[str]:
+) -> list[str]:
     """
     Rename latent variables to match the pathways that appear to correlate
     Number of pathways used in the name is controlled by `top`

@@ -1,9 +1,4 @@
-from sys import version_info
-
-if version_info[1] == 8:
-    import importlib_resources as ir
-elif version_info[1] >= 9:
-    import importlib.resources as ir
+import importlib.resources as ir
 
 import hypothesis.strategies as st
 import numpy as np

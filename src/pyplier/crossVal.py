@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -12,7 +11,7 @@ from .PLIERRes import PLIERResults
 
 def crossVal(
     plierRes: PLIERResults, priorMat: pd.DataFrame, priorMatcv: pd.DataFrame
-) -> Dict[str, pd.DataFrame]:
+) -> dict[str, pd.DataFrame]:
     """
     title crossVal
 

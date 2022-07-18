@@ -1,10 +1,4 @@
-from sys import version_info
-from typing import List
-
-if version_info[1] == 8:
-    import importlib_resources as ir
-elif version_info[1] >= 9:
-    import importlib.resources as ir
+import importlib.resources as ir
 
 import pandas as pd
 import pytest
@@ -110,7 +104,7 @@ def names():
     return prior_names
 
 
-def test_nameB(test_plierRes: PLIERResults, names: List[str]) -> None:
+def test_nameB(test_plierRes: PLIERResults, names: list[str]) -> None:
     new_names = nameB(test_plierRes)
 
     assert new_names == names

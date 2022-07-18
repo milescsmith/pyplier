@@ -1,5 +1,5 @@
 from functools import singledispatch
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -61,5 +61,5 @@ def _(arr: pd.DataFrame) -> pd.DataFrame:
     return arr.apply(lambda x: ((x - np.mean(x)) / np.std(x, ddof=1)), axis=0)
 
 
-def setdiff(list1: List[Any], list2: List[Any]) -> List[Any]:
+def setdiff(list1: list[Any], list2: list[Any]) -> list[Any]:
     return [_ for _ in set(list1) if _ not in list2]

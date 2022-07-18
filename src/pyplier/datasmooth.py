@@ -1,5 +1,5 @@
 def DataSmooth(svdres, k):
-    """ SVD based smoothing for single cell RNAseq data
+    """SVD based smoothing for single cell RNAseq data
 
     Parameters
     ----------

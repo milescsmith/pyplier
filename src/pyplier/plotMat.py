@@ -1,5 +1,5 @@
 # from pathlib import Path
-from typing import Dict, Optional
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,7 @@ def plotMat(
     cutoff: Optional[float] = None,
     *args,
     **kwargs
-) -> Dict[str, np.ndarray]:
+) -> dict[str, np.ndarray]:
     if trim_names is not None:
         mat.index = mat.index.str.slice(stop=trim_names)
         mat.columns = mat.columns.str.slice(stop=trim_names)

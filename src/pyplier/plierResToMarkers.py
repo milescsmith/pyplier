@@ -1,4 +1,4 @@
-from typing import List, TypeVar
+from typing import TypeVar
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,7 @@ PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 
 def plierResToMarkers(
-    plierRes: PLIERRes, priorMat: pd.DataFrame, num: int = 20, index: List[str] = None
+    plierRes: PLIERRes, priorMat: pd.DataFrame, num: int = 20, index: list[str] = None
 ) -> pd.DataFrame:
     ii = plierRes.U.columns[
         np.where(plierRes.U.sum(axis=0) > 0)

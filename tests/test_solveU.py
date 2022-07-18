@@ -1,20 +1,11 @@
-from operator import index
-from sys import version_info
+import importlib.resources as ir
 
-import hypothesis.extra.numpy as npst
-import hypothesis.strategies as st
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import given, settings
 from pytest import approx
 
 from pyplier.solveU import solveU
-
-if version_info[1] == 8:
-    import importlib_resources as ir
-elif version_info[1] >= 9:
-    import importlib.resources as ir
 
 
 @pytest.fixture

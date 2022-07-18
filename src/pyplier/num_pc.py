@@ -1,6 +1,6 @@
 import random
 from functools import singledispatch
-from typing import Dict, Tuple, Union
+from typing import Union
 
 import numpy as np
 from icontract import ensure, require
@@ -14,7 +14,7 @@ from .console import console
 
 @ensure(lambda result: result > 0)
 def num_pc(
-    data: Union[Dict[str, np.ndarray], np.ndarray],
+    data: Union[dict[str, np.ndarray], np.ndarray],
     method: str = None,
     B: int = 20,
     seed: int = None,
@@ -82,7 +82,7 @@ def compute_uu(data, **kwargs):
 
 
 @compute_uu.register
-def _(data: np.ndarray, **kwargs) -> Tuple[np.ndarray, str]:
+def _(data: np.ndarray, **kwargs) -> tuple[np.ndarray, str]:
     console.print("Computing svd")
     scaler = StandardScaler()
     data = scaler.fit_transform(data.T)
