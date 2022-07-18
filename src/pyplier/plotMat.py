@@ -23,17 +23,16 @@ def plotMat(
         mat.columns = mat.columns.str.slice(stop=trim_names)
 
     if cutoff is not None:
-        mat.where(cond=lambda x: x > cutoff, other=0, inplace=True)
+        mat.where(lambda x: x > cutoff, 0, inplace=True)
 
     iirow = np.where(mat.abs().sum(axis=1) > 0)[0]
     mat = mat.iloc[iirow, :]
-    iicol = np.where(mat.abs.sum(axis=0) > 0)[0]
+    iicol = np.where(mat.abs().sum(axis=0) > 0)[0]
     mat = mat.iloc[:, iicol]
 
     if scale:
         aa = mat.abs().max(axis=0)  # colMax
-        aa.replace(cond=lambda x: x != 0, other=0, inplace=True)
-        mat = mat.divide(other=aa, axis=0)
+        mat = mat.divide(aa.replace(0, 1), axis=1)
 
     sns.clustermap(data=mat, *args, **kwargs)
 

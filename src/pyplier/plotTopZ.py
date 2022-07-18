@@ -1,4 +1,4 @@
-from typing import List, Optional, TypeVar
+from typing import Optional, TypeVar
 
 import matplotlib.colors as mcolors
 import numpy as np
@@ -18,7 +18,7 @@ def plotTopZ(
     data: pd.DataFrame,
     priorMat: pd.DataFrame,
     top: int = 10,
-    index: Optional[List[str]] = None,
+    index: Optional[list[str]] = None,
     regress: bool = False,
     allLVs: bool = False,
     *args,
