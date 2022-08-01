@@ -2,7 +2,6 @@ import gzip
 import json
 from collections import defaultdict
 from pathlib import Path
-from typing import dict, list
 
 import numpy as np
 import pandas as pd

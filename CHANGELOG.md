@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.13.0] - 2022-07-31
+
+### Added
+
+- Unit test for `pyplier.combinePaths.combinePaths()` 
+  - also, while the results do not match those from R {PLIER}, pyplier's
+  version is technically correct  - PLIER's version has a bug
+
+### Fixed
+
+- Replaced inappropriate use of `numpy.exp()` where I should have used `numpy.power()`
+in `pyplier.AUC.mannwhitney_conf_int()`
+- remove stupid `from typing import dict, list` leftovers
+- `pyplier.combinePaths.combinePaths()` now returns an array of ints
+
+
 ## [0.12.0] - 2022-07-17
 
 - All apparently used functions implemented
