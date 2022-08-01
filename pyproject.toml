@@ -28,7 +28,7 @@ scikit-learn = "^1.1.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "flake8"
-flake8 = "^4.0.1"
+flake8 = "^5.0.0"
 ipykernel = "^6.4.2"
 isort = "^5.10.0"
 nox = "^2021.10.1"
