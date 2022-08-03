@@ -1,4 +1,5 @@
 import importlib.resources as ir
+
 import pandas as pd
 import pytest
 
@@ -38,6 +39,8 @@ def expected_allPaths():
     return allPaths_df
 
 
-def test_combinePaths(blood: pd.DataFrame, canonical: pd.DataFrame, expected_allPaths: pd.DataFrame):
+def test_combinePaths(
+    blood: pd.DataFrame, canonical: pd.DataFrame, expected_allPaths: pd.DataFrame
+):
     allPaths = combinePaths(blood, canonical)
     pd.testing.assert_frame_equal(allPaths, expected_allPaths)
