@@ -42,7 +42,9 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
 def tests(session: Session) -> None:
     args = session.posargs or locations
 
-    session.install("pytest", ".")
+    session.install("numpy")
+    session.run_always("poetry", "install", external=True)
+    session.install("pytest")
     session.install("hypothesis")
     session.run("pytest", *args)
 
