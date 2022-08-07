@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1] - 2022-08-07
+
+## Removed
+
+- Removed a few unused or unnecessary dependencies to reduce the exposure to
+  vulnerabilities
+
 ## [0.13.0] - 2022-07-31
 
 ### Added
