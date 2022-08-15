@@ -9,7 +9,7 @@ from scipy.linalg import svd
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.extmath import randomized_svd
 
-from .console import console
+from . import console
 
 
 @ensure(lambda result: result > 0)

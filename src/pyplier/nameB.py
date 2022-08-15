@@ -1,8 +1,10 @@
+from typing import TypeVar
 import numpy as np
 
-from .console import console
+from . import console
 from .PLIERRes import PLIERResults
 
+PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 def nameB(
     plierRes: PLIERResults, top: int = 1, fdr_cutoff: float = 0.01, use: str = None
@@ -26,9 +28,13 @@ def nameB(
         Uuse = plierRes.Uauc.copy(deep=True)
 
     if plierRes.Up is not None:
-        pval_cutoff = plierRes.summary.loc[plierRes.summary["FDR"] < fdr_cutoff, "p-value"].max()
+        pval_cutoff = plierRes.summary.loc[
+            plierRes.summary["FDR"] < fdr_cutoff, "p-value"
+        ].max()
         if np.isnan(pval_cutoff):
-            console.print("[red]No p-values in PLIER object were below the fdr_cutoff: using coefficients only[/]")
+            console.print(
+                "[red]No p-values in PLIER object were below the fdr_cutoff: using coefficients only[/]"
+            )
         else:
             Uuse[plierRes.Up > pval_cutoff] = 0
 

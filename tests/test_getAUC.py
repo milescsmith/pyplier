@@ -3,7 +3,7 @@ import importlib.resources as ir
 import pandas as pd
 import pytest
 
-from pyplier.getAUC import getAUC
+from pyplier.AUC import getAUC
 from pyplier.PLIERRes import PLIERResults
 
 

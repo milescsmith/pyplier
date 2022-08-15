@@ -1,3 +1,4 @@
+from typing import TypeVar
 from collections.abc import Iterable
 
 import numpy as np
@@ -7,6 +8,8 @@ from tqdm.auto import tqdm
 
 from .AUC import AUC
 from .PLIERRes import PLIERResults
+
+PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 
 def crossVal(

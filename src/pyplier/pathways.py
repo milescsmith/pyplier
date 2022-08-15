@@ -1,8 +1,14 @@
 # TODO: we should be able to handle other file types (plain text, JSON, grp, whatelse?)
 # TODO: should also be able to just download pathways
-from pathlib import Path
+# TODO: would like a `loadPathways` function here, that could take multiple files maybe and
+# automatically merge the pathway sets
 
+from pathlib import Path
 import pandas as pd
+
+
+def combinePaths(*args):
+    return pd.concat(args, axis=1, join="outer").fillna(0).astype(int)
 
 
 def pathwayFromGMT(gmt_file: Path) -> pd.DataFrame:
@@ -25,3 +31,4 @@ def pathwayFromGMT(gmt_file: Path) -> pd.DataFrame:
     ).rename_axis(columns=None)
 
     return gmt_wide
+

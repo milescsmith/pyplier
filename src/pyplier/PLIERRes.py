@@ -5,6 +5,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from tqdm.auto import tqdm
+
+from icontract import require
+from .utils import getCutoff
 
 
 class PLIERResults(object):
@@ -181,3 +185,80 @@ class PLIERResults(object):
                     input_dict = json.load(fp=infile)
         pr = cls().from_dict(input_dict)
         return pr
+
+    def to_markers(self, priorMat: pd.DataFrame, num: int = 20, index: list[str] = None) -> pd.DataFrame:
+        ii = self.U.columns[
+            np.where(self.U.sum(axis=0) > 0)
+        ]  # ii <- which(colsums(plierRes$U, parallel = TRUE) > 0)
+
+        if index is not None:
+            ii = np.intersect1d(ii, index)
+        # if !is.null(index):
+        #   ii <- intersect(ii, index)
+
+        Zuse = self.Z.loc[:, ii]  # Zuse <- plierRes$Z[, ii, drop = F]
+
+        # for (i in seq_along(ii)):
+        #   lv <- ii[i]
+        #   paths <- names(which(plierRes$U[, lv] < 0.01))
+        #   genes <- names(which(rowsums(x = priorMat[, paths], parallel = TRUE) > 0))
+        #   genesNotInPath <- setdiff(rownames(Zuse), genes)
+        #   Zuse[genesNotInPath, i] <- 0
+
+        for i in tqdm(ii):
+            paths = self.U.index[np.where(self.U.loc[:, i] < 0.01)[0]].values
+            genes = priorMat[(priorMat.loc[:, paths].sum(axis=1) > 0)].index.values
+            genesNotInPath = Zuse.index[~Zuse.index.isin(genes)]
+            Zuse.loc[genesNotInPath, i] = 0
+
+        tag = Zuse.rank(ascending=False)  # tag <- apply(-Zuse, 2, rank)
+        tag.columns = self.B.index[
+            np.where(self.U.sum(axis=0) > 0)
+        ]  # colnames(tag) <- rownames(plierRes$B)[ii]
+        iim = tag.min(axis=1)  # iim <- apply(tag, 1, min)
+        iig = iim.index[np.where(iim <= num)[0]]  # iig <- which(iim <= num)
+        tag = tag.loc[iig, :]  # tag <- tag[iig, ]
+        iin = tag.apply(lambda x: x <= num).sum(
+            axis=1
+        )  # iin <- rowsums(tag <= num, parallel = TRUE)
+        iimulti = iin.index[np.where(iin > 1)[0]]  # iimulti <- which(iin > 1)
+        if len(iimulti) > 0:
+            print(f"Genes not matched uniquely: {', '.join(iimulti.values)}")
+
+        # if len(iimulti) > 0:
+        #     message(paste0("Genes not matched uniquely: ", paste(names(iimulti), collapse = ", ")))
+
+        tag = tag.apply(lambda x: x <= num).astype(int)  # tag <- (tag <= num) + 1 - 1
+
+        return tag
+
+
+    @require(lambda ngenes: ngenes > 0)
+    def getEnrichmentVals(
+        self,
+        pathwayMat: pd.DataFrame,
+        ngenes: int = 50,
+        auc_cutoff: float = 0.7,
+        fdr_cutoff: float = 0.01,
+    ) -> pd.DataFrame:
+
+        pathwayMat = pathwayMat.loc[self.Z.index, self.U.index]
+        Uuse = np.where(self.U < auc_cutoff, 0, self.U)
+        Uuse = np.where(self.Up > getCutoff(self, fdr_cutoff), 0, self.U)
+        intop = np.zeros(self.Z.shape[1])
+        inpath = np.zeros(self.Z.shape[1])
+
+        for i in range(intop):
+            iipath = np.where(Uuse.iloc[:, i] > 0)
+            if len(iipath) > 0:
+                pathGenes = pathwayMat.loc[
+                    pathwayMat.iloc[:, iipath].apply(sum, axis="columns") > 0, :
+                ].index
+                topGenes = (
+                    self.Z.iloc[:, i].sort_values(ascending=False)[1:ngenes].index
+                )
+                pathGenesInt = topGenes.intersection(pathGenes)
+                inpath[i] = len(pathGenes)
+                intop[i] = len(pathGenesInt)
+
+        return pd.DataFrame(data={1: intop / inpath, 2: intop, 3: inpath})

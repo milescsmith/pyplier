@@ -3,7 +3,7 @@ import importlib.resources as ir
 import pandas as pd
 import pytest
 
-from pyplier.combinePaths import combinePaths
+from pyplier.pathways import combinePaths
 
 
 @pytest.fixture

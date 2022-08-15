@@ -3,7 +3,7 @@ import importlib.resources as ir
 import pandas as pd
 import pytest
 
-from pyplier.pathwayFromGMT import pathwayFromGMT
+from pyplier.pathways import pathwayFromGMT
 
 
 @pytest.fixture

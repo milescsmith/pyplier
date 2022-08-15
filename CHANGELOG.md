@@ -1,8 +1,20 @@
 # Changelog
 
+## [1.0.0] - 2022-08-15
+
+### Changed
+
+- Reorganized the submodules to make a little more sense and so that not everything was 
+  `plier.FUNCTION.FUNCTION`; some functions changed to be PLIERRes methods
+
+### Removed
+
+- Removed multiple functions
+
+
 ## [0.14.0] - 2022-08-15
 
-## Fixed
+### Fixed
 
 - In `nameB`, handle the situation where no pathways have a FDR less than the cutoff
 

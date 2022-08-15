@@ -620,3 +620,9 @@ MigrationBackup/
 
 noxfile.py
 pyproject.toml
+c2.cp.reactome.v7.5.1.symbols.gmt
+c2.cp.reactome.v7.5.1.symbols.gmt:Zone.Identifier
+pbmc3k_plier_res.json.gz
+pbmc3k_x.csv.gz
+data/pbmc3k_processed.h5ad
+reactome.csv.gz
