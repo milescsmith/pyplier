@@ -1,7 +1,7 @@
 from typing import TypeVar
 import numpy as np
 
-from . import console
+from rich import print as rprint
 from .PLIERRes import PLIERResults
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
@@ -32,7 +32,7 @@ def nameB(
             plierRes.summary["FDR"] < fdr_cutoff, "p-value"
         ].max()
         if np.isnan(pval_cutoff):
-            console.print(
+            rprint(
                 "[red]No p-values in PLIER object were below the fdr_cutoff: using coefficients only[/]"
             )
         else:

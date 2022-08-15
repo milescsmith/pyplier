@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1] - 2022-08-15
+
+### Fixed
+
+- Replaced `rich.console.Console` with just using `rich.print` so as to avoid circular imports
+
 ## [1.0.0] - 2022-08-15
 
 ### Changed

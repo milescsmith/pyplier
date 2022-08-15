@@ -8,9 +8,7 @@ from pysmooth import smooth
 from scipy.linalg import svd
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.extmath import randomized_svd
-
-from . import console
-
+from rich import print as rprint
 
 @ensure(lambda result: result > 0)
 def num_pc(
@@ -44,7 +42,7 @@ def num_pc(
     if (
         method == "permutation"
     ):  # not sure why this option is present in PLIER as it is not used
-        console.print(
+        rprint(
             "[red bold]WARNING!:[/red bold] using the 'permutation' method yields unreliable results.  This is only kept for compatibility with the R version of {PLIER}"
         )
         # nn = min(c(n, m))
@@ -83,7 +81,7 @@ def compute_uu(data, **kwargs):
 
 @compute_uu.register
 def _(data: np.ndarray, **kwargs) -> tuple[np.ndarray, str]:
-    console.print("Computing svd")
+    rprint("Computing svd")
     scaler = StandardScaler()
     data = scaler.fit_transform(data.T)
     uu = compute_svd(data, kwargs["k"])
@@ -94,7 +92,7 @@ def _(data: np.ndarray, **kwargs) -> tuple[np.ndarray, str]:
 def _(data: dict, **kwargs):
     if data["d"] is not None:
         if kwargs["method"] == "permutation":
-            console.print(
+            rprint(
                 "Original data is needed for permutation method.\nSetting method to elbow"
             )
             method = "elbow"
@@ -107,7 +105,7 @@ def _(data: dict, **kwargs):
 @ensure(lambda result: result > 1)
 def elbow(uu: np.ndarray) -> int:
     xraw = abs(np.diff(np.diff(uu)))
-    console.print("Smoothing data")
+    rprint("Smoothing data")
     x = smooth(xraw, twiceit=True)
     # plot(x)
 

@@ -7,8 +7,6 @@ import pandas as pd
 from glmnet import ElasticNet
 from tqdm.auto import trange
 
-# from . import plier_logger as logger
-
 
 class solveUReturnDict(TypedDict):
     U: pd.DataFrame

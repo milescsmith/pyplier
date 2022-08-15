@@ -2,6 +2,7 @@ import gzip
 import json
 from collections import defaultdict
 from pathlib import Path
+from rich import print as rprint
 
 import numpy as np
 import pandas as pd
@@ -81,31 +82,31 @@ class PLIERResults(object):
             return True
         else:
             if not np.isclose(self.B, other.B).all():
-                print("B is unequal")
-            elif not np.isclose(self.Z, other.Z).all():
-                print("Z is unequal")
-            elif not np.isclose(self.U, other.U).all():
-                print("U is unequal")
-            elif not np.isclose(self.C, other.C).all():
-                print("C is unequal")
-            elif self.L1 != other.L1:
-                print("L1 is unequal")
-            elif self.L2 != other.L2:
-                print("L2 is unequal")
-            elif self.L3 != other.L3:
-                print("L3 is unequal")
-            elif self.heldOutGenes != other.heldOutGenes:
-                print("heldOutGenes is unequal")
-            elif self.withPrior != other.withPrior:
-                print("withPrior is unequal")
-            elif not np.isclose(self.Uauc, other.Uauc).all():
-                print("Uauc is unequal")
-            elif not np.isclose(self.Up, other.Up).all():
-                print("Up is unequal")
-            elif not np.isclose(self.summary, other.summary).all():
-                print("summary is unequal")
-            elif not np.isclose(self.residual, other.residual).all():
-                print("residual is unequal")
+                rprint("[red]B[/red] is unequal")
+            if not np.isclose(self.Z, other.Z).all():
+                rprint("[red]Z[/red] is unequal")
+            if not np.isclose(self.U, other.U).all():
+                rprint("[red]U[/red] is unequal")
+            if not np.isclose(self.C, other.C).all():
+                rprint("[red]C[/red] is unequal")
+            if self.L1 != other.L1:
+                rprint("[red]L1[/red] is unequal")
+            if self.L2 != other.L2:
+                rprint("[red]L2[/red] is unequal")
+            if self.L3 != other.L3:
+                rprint("[red]L3[/red] is unequal")
+            if self.heldOutGenes != other.heldOutGenes:
+                rprint("[red]heldOutGenes[/red] is unequal")
+            if self.withPrior != other.withPrior:
+                rprint("[red]withPrior[/red] is unequal")
+            if not np.isclose(self.Uauc, other.Uauc).all():
+                rprint("[red]Uauc[/red] is unequal")
+            if not np.isclose(self.Up, other.Up).all():
+                rprint("[red]Up[/red] is unequal")
+            if not np.isclose(self.summary, other.summary).all():
+                rprint("[red]summary[/red] is unequal")
+            if not np.isclose(self.residual, other.residual).all():
+                rprint("[red]residual[/red] is unequal")
             return False
 
     def to_dict(self):
@@ -223,7 +224,7 @@ class PLIERResults(object):
         )  # iin <- rowsums(tag <= num, parallel = TRUE)
         iimulti = iin.index[np.where(iin > 1)[0]]  # iimulti <- which(iin > 1)
         if len(iimulti) > 0:
-            print(f"Genes not matched uniquely: {', '.join(iimulti.values)}")
+            rprint(f"Genes not matched uniquely: {', '.join(iimulti.values)}")
 
         # if len(iimulti) > 0:
         #     message(paste0("Genes not matched uniquely: ", paste(names(iimulti), collapse = ", ")))

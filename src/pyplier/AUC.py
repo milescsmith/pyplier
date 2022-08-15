@@ -8,10 +8,10 @@ from scipy.stats import mannwhitneyu, norm, rankdata
 from scipy.linalg import solve
 from statsmodels.stats.multitest import multipletests
 from typeguard import typechecked
+from rich import print as rprint
 
 from .PLIERRes import PLIERResults
 from .utils import crossprod, tcrossprod, copyMat
-from . import console
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
@@ -90,14 +90,14 @@ def mannwhitneyu_conf_int(
         )
 
         if sigma_ci == 0:
-            console.print(
+            rprint(
                 "cannot compute confidence interval when all observations are tied"
             )
 
         try:
             result = np.divide(np.subtract(dz, correction_ci), sigma_ci)
         except RuntimeWarning:
-            print(
+            rprint(
                 f"dz: {dz}\n"
                 f"correction_ci: {correction_ci}\n"
                 f"sigma_ci: {sigma_ci}\n"
