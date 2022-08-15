@@ -1,5 +1,6 @@
 import random
 from math import floor, ceil
+from typing import TypeVar
 
 import numpy as np
 import pandas as pd
@@ -11,18 +12,20 @@ from sklearn.utils.extmath import randomized_svd
 from tqdm.auto import tqdm, trange
 
 from .crossVal import crossVal
-from .getAUC import getAUC
+from .AUC import getAUC
 from .nameB import nameB
 from .num_pc import num_pc
-from .pinv_ridge import pinv_ridge
+from .regression import pinv_ridge
 from .PLIERRes import PLIERResults
 from .solveU import solveU
 from .utils import crossprod, rowNorm, setdiff, tcrossprod
 
+PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
+
 
 @require(lambda pathwaySelection: pathwaySelection in ("complete", "fast"))
 def PLIER(
-    data: pd.DataFrame, # for anndata objects, this will need to be transposed
+    data: pd.DataFrame,  # for anndata objects, this will need to be transposed
     priorMat: pd.DataFrame,
     svdres=None,
     num_LVs: float = None,
@@ -44,7 +47,7 @@ def PLIER(
     allGenes: bool = False,
     rseed: int = None,
     pathwaySelection: str = "complete",
-):
+) -> PLIERRes:
     """ "Main PLIER function
 
     Parameters

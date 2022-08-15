@@ -9,14 +9,13 @@ try:
 except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 
-# from .num_pc import num_pc
-# from .pinv_ridge import pinv_ridge
-# from .solveU import solveU
-# from .utils import crossprod, rowNorm, setdiff, tcrossprod
-
+import rich
 import logging
-
 import structlog
+
+from .plier import PLIER
+from .pathways import combinePaths, pathwayFromGMT
+
 
 plier_logger = structlog.get_logger()
 
@@ -34,10 +33,6 @@ structlog.configure(
     logger_factory=structlog.PrintLoggerFactory(),
     cache_logger_on_first_use=False,
 )
-
-# from .logger import setup_logging
-
-# plier_logger = setup_logging("pyplier")
 
 
 def set_verbosity(v: int = 3) -> None:

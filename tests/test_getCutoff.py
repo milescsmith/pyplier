@@ -3,7 +3,7 @@ import importlib.resources as ir
 import pandas as pd
 import pytest
 
-from pyplier.getCutoff import getCutoff
+from pyplier.utils import getCutoff
 from pyplier.PLIERRes import PLIERResults
 
 
@@ -22,7 +22,7 @@ def AUC_results():
     return {"Uauc": uauc_df, "Upval": upval_df, "summary": summary_df}
 
 
-def test_getAUC(AUC_results):
+def test_getCutoff(AUC_results):
     __tracebackhide__ = True
 
     cutoff = getCutoff(AUC_results, 0.01)

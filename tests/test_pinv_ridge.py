@@ -3,7 +3,7 @@ import importlib.resources as ir
 import pandas as pd
 import pytest
 
-from pyplier.pinv_ridge import pinv_ridge
+from pyplier.regression import pinv_ridge
 
 
 @pytest.fixture

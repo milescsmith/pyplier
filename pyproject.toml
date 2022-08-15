@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyplier"
-version = "0.14.0"
+version = "1.0.0"
 description = "Python reimplementation of PLIER"
 authors = ["milescsmith <mileschristiansmith@gmail.com>"]
 license = "MPL2.0"
@@ -42,6 +42,9 @@ dill = "^0.3.4"
 deepdiff = "^5.8.1"
 bandit = "^1.7.4"
 pytest-cov = "^3.0.0"
+
+[tool.isort]
+src_paths = ["src", "tests"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
