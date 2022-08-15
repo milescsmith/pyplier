@@ -1,5 +1,5 @@
 import random
-from math import floor
+from math import floor, ceil
 
 import numpy as np
 import pandas as pd
@@ -22,7 +22,7 @@ from .utils import crossprod, rowNorm, setdiff, tcrossprod
 
 @require(lambda pathwaySelection: pathwaySelection in ("complete", "fast"))
 def PLIER(
-    data: pd.DataFrame,
+    data: pd.DataFrame, # for anndata objects, this will need to be transposed
     priorMat: pd.DataFrame,
     svdres=None,
     num_LVs: float = None,
@@ -168,7 +168,7 @@ def PLIER(
         if ns > 500:
             rprint("Using rsvd")
             svdres["u"], svdres["d"], svdres["v"] = randomized_svd(
-                M=Y.values, n_components=min(ns, max(200, ns / 4)), n_iter=3
+                M=Y.values, n_components=ceil(min(ns, max(200, ns / 4))), n_iter=3
             )
         else:
             svdres["u"], svdres["d"], svdres["v"] = svd(

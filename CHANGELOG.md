@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.14.0] - 2022-08-15
+
+## Fixed
+
+- In `nameB`, handle the situation where no pathways have a FDR less than the cutoff
+
 ## [0.13.1] - 2022-08-07
 
 ## Removed

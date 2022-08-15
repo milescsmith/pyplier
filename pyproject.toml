@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "pyplier"
-version = "0.13.1"
+version = "0.14.0"
 description = "Python reimplementation of PLIER"
 authors = ["milescsmith <mileschristiansmith@gmail.com>"]
 license = "MPL2.0"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.10"
-numpy = ">=1.21"
+numpy = ">=1.21,<1.23"
 pandas = "^1.4"
 scipy = "^1.7"
 statsmodels = "^0.13"

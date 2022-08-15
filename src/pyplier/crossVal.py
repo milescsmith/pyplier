@@ -13,12 +13,20 @@ def crossVal(
     plierRes: PLIERResults, priorMat: pd.DataFrame, priorMatcv: pd.DataFrame
 ) -> dict[str, pd.DataFrame]:
     """
-    title crossVal
+    crossVal
 
-    param priorMat the real prior info matrix
-    param priorMatcv the zeroed-out prior info matrix used for PLIER
-    computations
+    Parameters
+    ----------
 
+    priorMat : :class:`pandas.DataFrame`
+        the real prior info matrix
+    priorMatcv : :class:`pandas.DataFrame`
+        the zeroed-out prior info matrix used for PLIER computations
+
+    Returns
+    -------
+
+    dict
     """
     out = pd.DataFrame(
         data=np.empty(shape=(0, 4)), columns=["pathway", "LV index", "AUC", "p-value"]

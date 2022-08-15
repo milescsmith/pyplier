@@ -26,10 +26,12 @@ def nameB(
         Uuse = plierRes.Uauc.copy(deep=True)
 
     if plierRes.Up is not None:
-        pval_cutoff = max(
-            plierRes.summary.loc[plierRes.summary["FDR"] < fdr_cutoff, "p-value"]
-        )
-        Uuse[plierRes.Up > pval_cutoff] = 0
+        pval_cutoff = plierRes.summary.loc[plierRes.summary["FDR"] < fdr_cutoff, "p-value"].max()
+        if np.isnan(pval_cutoff):
+            console.print("[red]No p-values in PLIER object were below the fdr_cutoff: using coefficients only[/]")
+        else:
+            Uuse[plierRes.Up > pval_cutoff] = 0
+
     else:
         console("[red]No p-values in PLIER object: using coefficients only[/]")
 

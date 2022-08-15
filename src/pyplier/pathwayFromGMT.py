@@ -1,3 +1,5 @@
+# TODO: we should be able to handle other file types (plain text, JSON, grp, whatelse?)
+# TODO: should also be able to just download pathways
 from pathlib import Path
 
 import pandas as pd
