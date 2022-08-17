@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 # from numba import jit
 from scipy.linalg import LinAlgError, svd
 
@@ -26,7 +25,7 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
     ------
     df: :class:`pd.DataFrame`
 
-    alfa: `int` 
+    alfa: `int`
         ridge penality adjustment
 
     """
@@ -34,10 +33,14 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
     if df.shape[0] != df.shape[1]:
         raise LinAlgError("Non-symmetric matrix")
 
-    u, d, v = svd(df) # note: compared to the R version of svd, the v matrix is returned transposed
+    u, d, v = svd(
+        df
+    )  # note: compared to the R version of svd, the v matrix is returned transposed
 
     if len(d) == 0:
-        return pd.DataFrame(np.zeros(tuple(reversed(m.shape))), columns=df.columns, index=df.index)
+        return pd.DataFrame(
+            np.zeros(tuple(reversed(m.shape))), columns=df.columns, index=df.index
+        )
 
     if alfa > 0:
         di = (np.power(d, 2) + alfa**2) / d

@@ -1,17 +1,17 @@
-from typing import Union, TypeVar
 from math import floor
+from typing import TypeVar, Union
 
 import numpy as np
 import pandas as pd
+from rich import print as rprint
+from scipy.linalg import solve
 from scipy.optimize import brentq
 from scipy.stats import mannwhitneyu, norm, rankdata
-from scipy.linalg import solve
 from statsmodels.stats.multitest import multipletests
 from typeguard import typechecked
-from rich import print as rprint
 
 from .PLIERRes import PLIERResults
-from .utils import crossprod, tcrossprod, copyMat
+from .utils import copyMat, crossprod, tcrossprod
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
@@ -90,9 +90,7 @@ def mannwhitneyu_conf_int(
         )
 
         if sigma_ci == 0:
-            rprint(
-                "cannot compute confidence interval when all observations are tied"
-            )
+            rprint("cannot compute confidence interval when all observations are tied")
 
         try:
             result = np.divide(np.subtract(dz, correction_ci), sigma_ci)

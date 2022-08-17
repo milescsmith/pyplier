@@ -1,10 +1,12 @@
 from typing import TypeVar
-import numpy as np
 
+import numpy as np
 from rich import print as rprint
+
 from .PLIERRes import PLIERResults
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
+
 
 def nameB(
     plierRes: PLIERResults, top: int = 1, fdr_cutoff: float = 0.01, use: str = None

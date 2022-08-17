@@ -1,5 +1,5 @@
 import random
-from math import floor, ceil
+from math import ceil, floor
 from typing import TypeVar
 
 import numpy as np
@@ -11,12 +11,12 @@ from scipy.linalg import solve, svd
 from sklearn.utils.extmath import randomized_svd
 from tqdm.auto import tqdm, trange
 
-from .crossVal import crossVal
 from .AUC import getAUC
+from .crossVal import crossVal
 from .nameB import nameB
 from .num_pc import num_pc
-from .regression import pinv_ridge
 from .PLIERRes import PLIERResults
+from .regression import pinv_ridge
 from .solveU import solveU
 from .utils import crossprod, rowNorm, setdiff, tcrossprod
 

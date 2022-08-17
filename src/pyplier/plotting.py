@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
+from matplotlib.patches import Patch
 from tqdm.auto import tqdm
 from typeguard import typechecked
 
@@ -12,6 +13,7 @@ from .PLIERRes import PLIERResults
 from .utils import rowNorm
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
+ClusterGrid = TypeVar("ClusterGrid", bound="sns.matrix.ClusterGrid")
 
 
 @typechecked
@@ -21,7 +23,7 @@ def plotMat(
     trim_names: Optional[int] = 50,
     cutoff: Optional[float] = None,
     *args,
-    **kwargs
+    **kwargs,
 ) -> dict[str, np.ndarray]:
     if trim_names is not None:
         mat.index = mat.index.str.slice(stop=trim_names)
@@ -52,75 +54,146 @@ def plotTopZ(
     index: Optional[list[str]] = None,
     regress: bool = False,
     allLVs: bool = False,
+    colormap: str = "viridis",
+    annotation_row_palette: str = "hls",
+    scale: Optional[int] = None,
+    cluster_cols: bool = True,
+    show_col_dendrogram: bool = False,
+    cluster_rows: bool = False,
+    show_row_dendrogram: bool = False,
+    show_cbar: bool = False,
+    show_legend: bool = True,
+    shuffle_pathway_pal: bool = False,
+    figsize: tuple[int] = (9, 9),
     *args,
-    **kwargs
-) -> None:
+    **kwargs,
+) -> ClusterGrid:
+    """Plot a heatmap of the top genes and the latent variables with which they are associated
+
+    Parameters
+    ----------
+    plierRes : :class:`PLIERRes`
+        result from :func:`pyplier.plier.PLIER`
+    data : :class:`pd.DataFrame`
+        the data to be displayed in a heatmap, typically the z-scored input data (or some subset thereof)
+    priorMat : :class:`pd.DataFrame`
+        the same gene by geneset binary matrix that was used to run PLIER
+    top : int, default 10
+        top number of genes to use
+    index : list[str], default None
+        Subset of LVs to display.  If None, show all.
+    regress : bool, default False
+        Remove the effect of all other LVs before plotting top genes.
+        Will take longer, but can be useful to see distinct patterns in highly correlated LVs
+    allLVs : bool, default False
+        plot even the LVs that have no pathway association
+    colormap : str, default 'viridis'
+        color palette to use for displaying Z values in the heatmap
+    annotation_row_palette : str, default "hls"
+        color palette to use when generating label colors for the LV annotations
+    scale : int, default None
+        Whether to scale the values by rows (0) or columns(1) in the heatmap.  If None, no
+        scaling is performed.  See :func:`sns.clustermap` for more.
+    cluster_cols : bool, default True
+        Should the samples be clustered?
+    show_col_dendrogram : bool, default False
+        Should the sample dendrogram be displayed?
+    cluster_rows : bool, default False
+        Should the genes be clustered?
+    show_row_dendrogram : bool, default False
+        Should the gene dendrogram be displayed?
+    show_cbar : bool, default False
+        Should the Z score color bar be displayed?
+    show_legend : bool, default True
+        Should the LV legend be displayed?
+    shuffle_pathway_pal : bool, default False
+        If true, the palette generated for the LV annotations is shuffled.  Can help
+        if a lot of LVs are being displayed
+    figsize : tuple[int], default (9,9)
+        Figure size for the heatmap, expressed as (width, height)
+    """
+
+    # subset the original data matrix and the prior pathway matrix on the genes that were used by `PLIER`
     data = data.loc[plierRes.Z.index, :]
     priorMat = priorMat.loc[plierRes.Z.index.intersection(priorMat.index), :]
     plierRes.U.columns[np.where(plierRes.U.sum(axis=0) > 0)]
 
-    if not allLVs:
+    if allLVs:
         if index is not None:
-            ii = plierRes.U.columns[np.where(plierRes.U.sum(axis=0) > 0)].intersection(
+            ii = plierRes.U.columns.intersection(
                 index
-            )
+            )  # use `intersection` so we don't have an issue with trying to plot non-existent LVs
+        else:
+            ii = plierRes.U.columns
     elif index is not None:
-        ii = index
+        ii = plierRes.U.columns[plierRes.U.sum() > 0].intersection(index)
+    else:
+        ii = plierRes.U.columns[plierRes.U.sum() > 0]
 
-    tmp = plierRes.Z.loc[:, ii].rank(ascending=False)
+    z_ranks = plierRes.Z.loc[:, ii].rank(ascending=False)
+    nnz_ranks = [z_ranks[i].index[[z_ranks[i] <= top]].values for i in ii]
 
-    nntmp = [tmp.index[np.where(tmp[i] <= top)[0]].values for i in ii]
-    nn = np.concatenate(nntmp)
-    nncol = (
-        plierRes.B.index[np.where(plierRes.Z.columns.isin(ii))[0]]
-        .repeat([len(_) for _ in nntmp])
-        .str[:30]
+    nn = np.concatenate(nnz_ranks)
+
+    nncol = plierRes.B.index[plierRes.Z.columns.isin(ii)].repeat(
+        [len(_) for _ in nnz_ranks]
     )
+
     nnpath = pd.concat(
         [
             priorMat.loc[x, plierRes.U.loc[plierRes.U.loc[:, y] > 0, y].index].sum(
                 axis=1
             )
             > 0
-            for x, y in zip(nntmp, ii)
+            for x, y in zip(nnz_ranks, ii)
         ],
         axis=0,
     )
-    nnindex = ii.repeat([len(_) for _ in nntmp])
 
-    nnrep = np.unique(nn)[np.where(np.unique(nn, return_counts=True)[1] > 1)[0]]
+    nnindex = ii.repeat([len(_) for _ in nnz_ranks])
+
+    nnrep = np.unique(nn)[np.unique(nn, return_counts=True)[1] > 1]
 
     if len(nnrep) > 0:
-        nnrep_im = np.where(nn == nnrep)[0]
+        nnrep_im = np.intersect1d(nn, nnrep, return_indices=True)[1]
         nn = np.delete(nn, nnrep_im)
         nncol = np.delete(nncol, nnrep_im)
-        nnpath.drop(nnrep, inplace=True)
+        nnpath = nnpath.iloc[[_ for _ in range(len(nnpath)) if _ not in nnrep_im]]
         nnindex = np.delete(nnindex, nnrep_im)
+        nnpath.replace({True: "inPathway", False: "notInPathway"}, inplace=True)
 
     nnpath.replace({True: "inPathway", False: "notInPathway"}, inplace=True)
+
+    pathway_gene_index = pd.MultiIndex.from_tuples(
+        list(zip(*[nncol.tolist(), nn.tolist()])), names=["pathway", "gene"]
+    )
+
     nncol = pd.DataFrame({"pathway": nncol, "present": nnpath})
 
-    toPlot = rowNorm(data.loc[nn, :])
+    toplot = data.loc[nn, :]
 
     if regress:
         for i in tqdm(ii):
             gi = np.where(nnindex == i)[0]
-            toPlot.iloc[gi, :] = (
+            toplot.iloc[gi, :] = (
                 sm.GLS(
-                    toPlot.iloc[gi, :].T,
-                    plierRes.B.drop(index=plierRes.B.index[0]).loc[:, toPlot.columns].T,
+                    toplot.iloc[gi, :].T,
+                    plierRes.B.drop(index=plierRes.B.index[0]).loc[:, toplot.columns].T,
                 )
                 .fit()
                 .resid.T
             )
-    # maxval = toPlot.abs().max().max()
 
     present_lut = {
         "inPathway": mcolors.to_rgb(mcolors.CSS4_COLORS["black"]),
         "notInPathway": mcolors.to_rgb(mcolors.CSS4_COLORS["beige"]),
     }
 
-    pathway_pal = sns.husl_palette(nncol["pathway"].nunique(), s=2)
+    pathway_pal = sns.color_palette(
+        annotation_row_palette, n_colors=pathway_labels.unique().size
+    )
+    if shuffle_pathway_pal:
+        np.random.shuffle(pathway_pal)
     pathway_lut = {x: y for x, y in zip(nncol["pathway"].unique(), pathway_pal)}
 
     nncol = nncol.replace({True: "inPathway", False: "notinPathway"})
@@ -129,15 +202,37 @@ def plotTopZ(
             "pathway": nncol["pathway"].map(pathway_lut),
             "present": nncol["present"].map(present_lut),
         }
-    )
+    ).set_index(pathway_gene_index)
 
-    sns.clustermap(
-        toPlot,
-        cmap="viridis",
+    pathway_labels = row_annotations.index.get_level_values("pathway")
+
+    g = sns.clustermap(
+        data=toplot,
+        row_cluster=cluster_rows,
+        col_cluster=cluster_cols,
+        cmap=colormap,
         robust=True,
         linecolor="black",
-        row_colors=row_annotations,
+        row_colors=row_annotations.droplevel("pathway"),
+        figsize=figsize,
+        standard_scale=scale,
+        xticklabels=False,
+        **kwargs,
     )
+    g.ax_col_dendrogram.set_visible(show_col_dendrogram)
+    g.ax_row_dendrogram.set_visible(show_row_dendrogram)
+    g.ax_cbar.set_visible(show_cbar)
+
+    if show_legend:
+        _ = g.ax_heatmap.legend(
+            handles=[Patch(facecolor=pathway_lut[name]) for name in pathway_lut],
+            labels=pathway_lut.keys(),
+            ncol=1,
+            loc="lower left",
+            bbox_to_anchor=(1.05, 0.25),
+        )
+
+    return g
 
 
 def plotTopZallPath(
@@ -149,7 +244,7 @@ def plotTopZallPath(
     regress: bool = False,
     fdr_cutoff: float = 0.2,
     *args,
-    **kwargs
+    **kwargs,
 ) -> None:
     """
     visualize the top genes contributing to the LVs similarily to [plotTopZ()].
@@ -180,13 +275,13 @@ def plotTopZallPath(
     if index is not None:
         ii = ii.intersection(index)
 
-    tmp = plierRes.Z.loc[:, ii].rank(axis=0, ascending=False)
+    z_ranks = plierRes.Z.loc[:, ii].rank(axis=0, ascending=False)
     Ustrict = plierRes.U.copy()
     Ustrict[plierRes.Up > pval_cutoff] = 0
     pathsUsed = Ustrict[Ustrict.loc[:, ii].sum(axis=1) > 0].index
     pathMat = np.zeros((0, len(pathsUsed)))
 
-    nntmp = {i: tmp.index[np.where(tmp[i] <= top)[0]].values for i in ii}
+    nntmp = {i: z_ranks.index[np.where(z_ranks[i] <= top)[0]].values for i in ii}
     nn = np.concatenate(list(nntmp.values()))
     nncol = {
         i: plierRes.U.index[plierRes.U.loc[:, i] == plierRes.U.loc[:, i].max()].repeat(
@@ -240,7 +335,7 @@ def plotU(
     top: int = 3,
     sort_row: bool = False,
     *args,
-    **kwargs
+    **kwargs,
 ) -> None:
     """
     plot the U matrix from a PLIER decomposition
@@ -282,7 +377,7 @@ def plotU(
             U.loc[Um.rank(ascending=False).sort_values().index],
             row_cluster=False,
             *args,
-            **kwargs
+            **kwargs,
         )
     else:
         plotMat(U, *args, **kwargs)

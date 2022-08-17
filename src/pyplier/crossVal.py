@@ -1,5 +1,5 @@
-from typing import TypeVar
 from collections.abc import Iterable
+from typing import TypeVar
 
 import numpy as np
 import pandas as pd

@@ -4,6 +4,7 @@
 # automatically merge the pathway sets
 
 from pathlib import Path
+
 import pandas as pd
 
 
@@ -31,4 +32,3 @@ def pathwayFromGMT(gmt_file: Path) -> pd.DataFrame:
     ).rename_axis(columns=None)
 
     return gmt_wide
-
