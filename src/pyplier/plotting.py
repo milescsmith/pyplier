@@ -137,7 +137,7 @@ def plotTopZ(
 
     nncol = plierRes.B.index[plierRes.Z.columns.isin(ii)].repeat(
         [len(_) for _ in nnz_ranks]
-    )
+    ).to_series()
 
     nnpath = pd.concat(
         [
@@ -157,18 +157,11 @@ def plotTopZ(
     if len(nnrep) > 0:
         nnrep_im = np.intersect1d(nn, nnrep, return_indices=True)[1]
         nn = np.delete(nn, nnrep_im)
-        nncol = np.delete(nncol, nnrep_im)
+        nncol = nncol.iloc[[_ for _ in range(len(nncol)) if _ not in nnrep_im]]
         nnpath = nnpath.iloc[[_ for _ in range(len(nnpath)) if _ not in nnrep_im]]
         nnindex = np.delete(nnindex, nnrep_im)
-        nnpath.replace({True: "inPathway", False: "notInPathway"}, inplace=True)
 
     nnpath.replace({True: "inPathway", False: "notInPathway"}, inplace=True)
-
-    pathway_gene_index = pd.MultiIndex.from_tuples(
-        list(zip(*[nncol.tolist(), nn.tolist()])), names=["pathway", "gene"]
-    )
-
-    nncol = pd.DataFrame({"pathway": nncol, "present": nnpath})
 
     toplot = data.loc[nn, :]
 
@@ -190,21 +183,19 @@ def plotTopZ(
     }
 
     pathway_pal = sns.color_palette(
-        annotation_row_palette, n_colors=pathway_labels.unique().size
+        annotation_row_palette, n_colors=nncol.unique().size
     )
     if shuffle_pathway_pal:
         np.random.shuffle(pathway_pal)
-    pathway_lut = {x: y for x, y in zip(nncol["pathway"].unique(), pathway_pal)}
+    pathway_lut = {x: y for x, y in zip(nncol.unique(), pathway_pal)}
 
-    nncol = nncol.replace({True: "inPathway", False: "notinPathway"})
     row_annotations = pd.DataFrame(
         {
-            "pathway": nncol["pathway"].map(pathway_lut),
-            "present": nncol["present"].map(present_lut),
-        }
-    ).set_index(pathway_gene_index)
-
-    pathway_labels = row_annotations.index.get_level_values("pathway")
+            "pathway": nncol.map(pathway_lut).values,
+            "present": nnpath.map(present_lut).values,
+        },
+        index=nnpath.index
+    )
 
     g = sns.clustermap(
         data=toplot,
@@ -213,7 +204,7 @@ def plotTopZ(
         cmap=colormap,
         robust=True,
         linecolor="black",
-        row_colors=row_annotations.droplevel("pathway"),
+        row_colors=row_annotations,
         figsize=figsize,
         standard_scale=scale,
         xticklabels=False,

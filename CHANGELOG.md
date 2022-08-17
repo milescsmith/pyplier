@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.1] - 2022-08-17
+
+### Fixed
+
+- Should probably actually try using `pyplier.plotting.plotTopZ` before pushing.
+
+## [1.1.0] - 2022-08-17
+
+### Fixed
+
+- `pyplier.plotting.plotTopZ` actually works now.
+
 ## [1.0.1] - 2022-08-15
 
 ### Fixed
