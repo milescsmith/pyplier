@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 # from numba import jit
 from scipy.linalg import LinAlgError, svd
 
@@ -40,7 +39,7 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
 
     if len(d) == 0:
         return pd.DataFrame(
-            np.zeros(tuple(reversed(m.shape))), columns=df.columns, index=df.index
+            np.zeros(tuple(reversed(df.shape))), columns=df.columns, index=df.index
         )
 
     if alfa > 0:

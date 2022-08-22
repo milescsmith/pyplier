@@ -2,14 +2,13 @@ import gzip
 import json
 from collections import defaultdict
 from pathlib import Path
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-from icontract import require
+
 from rich import print as rprint
 from tqdm.auto import tqdm
-
-from .utils import getCutoff
 
 
 # TODO: should we keep the original source data as part of this object?
@@ -25,8 +24,8 @@ class PLIERResults(object):
         L1: float = 0.0,
         L2: float = 0.0,
         L3: float = 0.0,
-        heldOutGenes: dict[str, list[str]] = defaultdict(list),
-        withPrior: dict[str, int] = defaultdict(int),
+        heldOutGenes: Dict[str, List[str]] = defaultdict(list),
+        withPrior: Dict[str, int] = defaultdict(int),
         Uauc: pd.DataFrame = pd.DataFrame(),
         Up: pd.DataFrame = pd.DataFrame(),
         summary: pd.DataFrame = pd.DataFrame(),
@@ -191,11 +190,9 @@ class PLIERResults(object):
         return pr
 
     def to_markers(
-        self, priorMat: pd.DataFrame, num: int = 20, index: list[str] = None
+        self, priorMat: pd.DataFrame, num: int = 20, index: List[str] = None
     ) -> pd.DataFrame:
-        ii = self.U.columns[
-            np.where(self.U.sum(axis=0) > 0)
-        ]  # ii <- which(colsums(plierRes$U, parallel = TRUE) > 0)
+        ii = self.U.columns[self.U.sum(axis=0) > 0]  # ii <- which(colsums(plierRes$U, parallel = TRUE) > 0)
 
         if index is not None:
             ii = np.intersect1d(ii, index)
@@ -212,58 +209,56 @@ class PLIERResults(object):
         #   Zuse[genesNotInPath, i] <- 0
 
         for i in tqdm(ii):
-            paths = self.U.index[np.where(self.U.loc[:, i] < 0.01)[0]].values
-            genes = priorMat[(priorMat.loc[:, paths].sum(axis=1) > 0)].index.values
+            paths = self.U.index[(self.U.loc[:, i] < 0.01)].to_numpy()
+            genes = priorMat[(priorMat.loc[:, paths].sum(axis=1) > 0)].index.to_numpy()
             genesNotInPath = Zuse.index[~Zuse.index.isin(genes)]
             Zuse.loc[genesNotInPath, i] = 0
 
         tag = Zuse.rank(ascending=False)  # tag <- apply(-Zuse, 2, rank)
         tag.columns = self.B.index[
-            np.where(self.U.sum(axis=0) > 0)
+            (self.U.sum(axis=0) > 0)
         ]  # colnames(tag) <- rownames(plierRes$B)[ii]
         iim = tag.min(axis=1)  # iim <- apply(tag, 1, min)
-        iig = iim.index[np.where(iim <= num)[0]]  # iig <- which(iim <= num)
+        iig = iim.index[iim <= num]  # iig <- which(iim <= num)
         tag = tag.loc[iig, :]  # tag <- tag[iig, ]
         iin = tag.apply(lambda x: x <= num).sum(
             axis=1
         )  # iin <- rowsums(tag <= num, parallel = TRUE)
-        iimulti = iin.index[np.where(iin > 1)[0]]  # iimulti <- which(iin > 1)
+        iimulti = iin.index[iin > 1]  # iimulti <- which(iin > 1)
         if len(iimulti) > 0:
             rprint(f"Genes not matched uniquely: {', '.join(iimulti.values)}")
-
-        # if len(iimulti) > 0:
-        #     message(paste0("Genes not matched uniquely: ", paste(names(iimulti), collapse = ", ")))
 
         tag = tag.apply(lambda x: x <= num).astype(int)  # tag <- (tag <= num) + 1 - 1
 
         return tag
 
-    @require(lambda ngenes: ngenes > 0)
-    def getEnrichmentVals(
-        self,
-        pathwayMat: pd.DataFrame,
-        ngenes: int = 50,
-        auc_cutoff: float = 0.7,
-        fdr_cutoff: float = 0.01,
-    ) -> pd.DataFrame:
+    # @require(lambda ngenes: ngenes > 0)
+    # def getEnrichmentVals(
+    #     self,
+    #     pathwayMat: pd.DataFrame,
+    #     ngenes: int = 50,
+    #     auc_cutoff: float = 0.7,
+    #     fdr_cutoff: float = 0.01,
+    # ) -> pd.DataFrame:
 
-        pathwayMat = pathwayMat.loc[self.Z.index, self.U.index]
-        Uuse = np.where(self.U < auc_cutoff, 0, self.U)
-        Uuse = np.where(self.Up > getCutoff(self, fdr_cutoff), 0, self.U)
-        intop = np.zeros(self.Z.shape[1])
-        inpath = np.zeros(self.Z.shape[1])
+    #     pathwayMat = pathwayMat.loc[self.Z.index, self.U.index]
+    #     # TODO: okay, this isn't right, but getEnrichmentVals isn't currently used nor is it used in {PLIER}, so... ?
+    #     Uuse = np.where(self.U < auc_cutoff, 0, self.U)
+    #     Uuse = np.where(self.Up > getCutoff(self, fdr_cutoff), 0, self.U)
+    #     intop = np.zeros(self.Z.shape[1])
+    #     inpath = np.zeros(self.Z.shape[1])
 
-        for i in range(intop):
-            iipath = np.where(Uuse.iloc[:, i] > 0)
-            if len(iipath) > 0:
-                pathGenes = pathwayMat.loc[
-                    pathwayMat.iloc[:, iipath].apply(sum, axis="columns") > 0, :
-                ].index
-                topGenes = (
-                    self.Z.iloc[:, i].sort_values(ascending=False)[1:ngenes].index
-                )
-                pathGenesInt = topGenes.intersection(pathGenes)
-                inpath[i] = len(pathGenes)
-                intop[i] = len(pathGenesInt)
+    #     for i in range(intop):
+    #         iipath = np.where(Uuse.iloc[:, i] > 0)
+    #         if len(iipath) > 0:
+    #             pathGenes = pathwayMat.loc[
+    #                 pathwayMat.iloc[:, iipath].apply(sum, axis="columns") > 0, :
+    #             ].index
+    #             topGenes = (
+    #                 self.Z.iloc[:, i].sort_values(ascending=False)[1:ngenes].index
+    #             )
+    #             pathGenesInt = topGenes.intersection(pathGenes)
+    #             inpath[i] = len(pathGenes)
+    #             intop[i] = len(pathGenesInt)
 
-        return pd.DataFrame(data={1: intop / inpath, 2: intop, 3: inpath})
+    #     return pd.DataFrame(data={1: intop / inpath, 2: intop, 3: inpath})

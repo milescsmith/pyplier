@@ -11,6 +11,9 @@ locations = (
     "src",
     "tests",
 )  # "noxfile.py", #"docs/conf.py"
+test_locations = (
+    "tests",
+)
 
 
 def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> None:
@@ -40,7 +43,7 @@ def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> Non
 
 @session(python=["3.9"])
 def tests(session: Session) -> None:
-    args = session.posargs or locations
+    args = session.posargs or test_locations
 
     session.install("numpy")
     session.run_always("poetry", "install", external=True)

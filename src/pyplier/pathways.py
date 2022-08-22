@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 
-def combinePaths(*args):
+def combinePaths(*args) -> pd.DataFrame:
     return pd.concat(args, axis=1, join="outer").fillna(0).astype(int)
 
 

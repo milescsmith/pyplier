@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, List
 
 import numpy as np
 from rich import print as rprint
@@ -10,7 +10,7 @@ PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 def nameB(
     plierRes: PLIERResults, top: int = 1, fdr_cutoff: float = 0.01, use: str = None
-) -> list[str]:
+) -> List[str]:
     """
     Rename latent variables to match the pathways that appear to correlate
     Number of pathways used in the name is controlled by `top`
@@ -41,7 +41,7 @@ def nameB(
             Uuse[plierRes.Up > pval_cutoff] = 0
 
     else:
-        console("[red]No p-values in PLIER object: using coefficients only[/]")
+        rprint("[red]No p-values in PLIER object: using coefficients only[/]")
 
     mm = Uuse.apply(func=np.max, axis=0)
 

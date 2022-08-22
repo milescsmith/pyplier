@@ -1,5 +1,5 @@
 from math import floor
-from typing import TypeVar, Union
+from typing import TypeVar, Union, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,7 @@ PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 
 @typechecked
-def AUC(labels: pd.Series, values: pd.Series) -> dict[str, float]:
+def AUC(labels: pd.Series, values: pd.Series) -> Dict[str, float]:
     posii = labels[labels > 0]
     negii = labels[labels <= 0]
     posn = len(posii)
@@ -43,8 +43,8 @@ def AUC(labels: pd.Series, values: pd.Series) -> dict[str, float]:
 
 @typechecked
 def mannwhitneyu_conf_int(
-    x: Union[list[float], pd.Series],
-    y: Union[list[float], pd.Series],
+    x: Union[List[float], pd.Series],
+    y: Union[List[float], pd.Series],
     alpha: float = 0.05,
     tol_root: float = 1e-4,
     digits_rank: float = np.inf,
@@ -168,7 +168,7 @@ def mannwhitneyu_conf_int(
 
 def getAUC(
     plierRes: PLIERResults, data: pd.DataFrame, priorMat: pd.DataFrame
-) -> dict[str, pd.DataFrame]:
+) -> Dict[str, pd.DataFrame]:
     Z = plierRes.Z
     Zcv = copyMat(Z)
     k = Z.shape[1]
