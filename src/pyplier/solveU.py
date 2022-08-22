@@ -1,10 +1,11 @@
 import warnings
 from copy import deepcopy
-from typing import Optional, TypedDict
+from typing import Optional, TypedDict, Union
 
 import numpy as np
 import pandas as pd
 from glmnet import ElasticNet
+from scipy.stats import rankdata
 from tqdm.auto import trange
 
 
@@ -55,35 +56,37 @@ def solveU(
     Ur = Chat @ Z  # get U by OLS
 
     Ur = Ur.rank(axis="index", ascending=False)  # rank
-    Urm = Ur.min(axis=1)
 
-    U = pd.DataFrame(np.zeros(shape=(priorMat.shape[1], Z.shape[1])))
+    if pathwaySelection != "fast":
+        iip = np.where([Ur.min(axis=1) <= maxPath])[1]
+
+    results = dict()
+
     if L3 is None:
+        U = np.zeros(shape=(priorMat.shape[1], Z.shape[1]))
+
         lambdas = np.exp(np.arange(start=-4, stop=-12.125, step=-0.125))
         results = dict()
         lMat = np.full((len(lambdas), Z.shape[1]), np.nan)
+        gres = ElasticNet(
+            lambda_path=lambdas,
+            lower_limits=0,
+            standardize=False,
+            fit_intercept=True,
+            alpha=glm_alpha,
+            max_features=150,
+        )
 
         for i in range(Z.shape[1]):
             if pathwaySelection == "fast":
                 iip = np.where([Ur.iloc[:, i] <= maxPath])[1]
-            else:
-                iip = np.where([Urm <= maxPath])[1]
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                gres = ElasticNet(
-                    lambda_path=lambdas,
-                    lower_limits=0,
-                    standardize=False,
-                    fit_intercept=True,
-                    alpha=glm_alpha,
-                    max_features=150,
-                )
-
                 gres.fit(
-                    y=Z.iloc[:, i].astype(np.float64).values,
-                    X=priorMat.iloc[:, iip].astype(np.float64).values,
-                    relative_penalties=[penalty_factor[_] for _ in iip],
+                    y=Z.iloc[:, i],
+                    X=priorMat.iloc[:, iip],
+                    relative_penalties=penalty_factor[iip],
                 )
 
             gres.iip = iip
@@ -98,92 +101,36 @@ def solveU(
         # yeah, so this is not very pythonic, but it matches the R code
         # TODO: replace this with something like our original attempt
         for i in trange(Z.shape[1]):
-            U.iloc[results[i].iip, i] = results[i].coef_path_[:, iibest]
+            U[results[i].iip, i] = results[i].coef_path_[:, iibest]
 
-        U.index = priorMat.columns
-        U.columns = Z.columns
-        # try:
-        #     U = (pd.DataFrame(
-        #             index=(priorMat.columns.set_names("pathway")).merge(pd.DataFrame(data={
-        #                 i: pd.Series(
-        #                     data=results[i].coef_path_[:, iibest],
-        #                     index=Ur.index[results[i].iip].set_names("pathway")
-        #                     )
-        #                 for i in range(Z.shape[1])
-        #             }, ),
-        #             on="pathway",
-        #             how="left",
-        #         ).fillna(0)))
-        # except KeyError:
-        #     print("oops!")
-        #     print(
-        #         pd.DataFrame(data={
-        #             i: pd.Series(
-        #                 data=results[i].coef_path_[:, iibest],
-        #                 index=Ur.index[results[i].iip],
-        #             )
-        #             for i in range(Z.shape[1])
-        #         }, ).index.name)
-        #     print(pd.DataFrame(index=priorMat.columns).index.name)
-
-        # what is the point of this?  It is never used!
-        # Utmp = solveU(Z, Chat, priorMat, penalty.factor,
-        #     pathwaySelection = "fast", glm_alpha = 0.9, maxPath = 10,
-        #     L3 = lambdas[iibest]
-        #     )
-
-        # stop()
-        return solveUReturnDict(U=U, L3=lambdas[iibest])
+        U = pd.DataFrame(U, index=priorMat.columns, columns=Z.columns).fillna(0)
+        L3 = lambdas[iibest]
     else:
         # do one fit with a given lambda
-        results = dict()
+        gres = ElasticNet(
+            lambda_path=[L3 * 0.9, L3, L3 * 1.1],
+            lower_limits=0,
+            standardize=False,
+            fit_intercept=True,
+            alpha=glm_alpha,
+            max_features=150,
+        )
+
         for i in range(Z.shape[1]):
             if pathwaySelection == "fast":
                 iip = np.where([Ur.iloc[:, i] <= maxPath])[1]
-            else:
-                iip = np.where([Urm <= maxPath])[1]
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                gres = ElasticNet(
-                    lambda_path=[L3 * 0.9, L3, L3 * 1.1],
-                    lower_limits=0,
-                    standardize=False,
-                    fit_intercept=True,
-                    alpha=glm_alpha,
-                    max_features=150,
-                )
 
                 # try:
                 gres.fit(
-                    y=Z.iloc[:, i].astype(np.float64).values,
-                    X=priorMat.iloc[:, iip].astype(np.float64).values,
-                    relative_penalties=[penalty_factor[_] for _ in iip],
+                    y=Z.iloc[:, i],
+                    X=priorMat.iloc[:, iip],
+                    relative_penalties=penalty_factor[iip],
                 )
-            # except TypeError:
-            #     print(f"iip: {iip}")
-            #     print(f"sliced: {[penalty_factor[_] for _ in iip]}")
-            #     print(f"penalty_factor: {penalty_factor}")
+            results[i] = pd.Series(data=gres.coef_path_[:, 1], index=Ur.index[iip])
 
-            # try:
-            results[i] = pd.Series(
-                data=[_[1] for _ in gres.coef_path_], index=Ur.index[iip]
-            )
-            # except AttributeError:
-            #     print(dir(gres))
+        U = pd.DataFrame(results, index=priorMat.columns).fillna(0)
 
-            # U[iip, i] = [_[1] for _ in gres.coef_path_]
-
-        U = (
-            pd.DataFrame(index=priorMat.columns.set_names("pathway"))
-            .merge(
-                pd.DataFrame(
-                    {i: results[i] for i in range(Z.shape[1])},
-                ).rename_axis(index="pathway", axis="index"),
-                on="pathway",
-                how="left",
-            )
-            .fillna(0)
-        )
-
-        return solveUReturnDict(U=U, L3=L3)
+    return solveUReturnDict(U=U, L3=L3)

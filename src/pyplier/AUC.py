@@ -51,6 +51,31 @@ def mannwhitneyu_conf_int(
     correct: bool = False,
     alternative: str = "two_sided",
 ) -> tuple[float, float]:
+    """Essentially a straight-up transliteration of the the _wilcox.test function in R's {stats} library
+    Necessary since the scipy.stats.mannwhitneyu does not return confidence intervals
+
+    Parameters
+    ----------
+    x : Union[list[float], pd.Series]
+        _description_
+    y : Union[list[float], pd.Series]
+        _description_
+    alpha : float, optional
+        _description_, by default 0.05
+    tol_root : float, optional
+        _description_, by default 1e-4
+    digits_rank : float, optional
+        _description_, by default np.inf
+    correct : bool, optional
+        _description_, by default False
+    alternative : str, optional
+        _description_, by default "two_sided"
+
+    Returns
+    -------
+    tuple[float, float]
+        _description_
+    """
     mumin = min(x) - max(y)
     mumax = max(x) - min(y)
 

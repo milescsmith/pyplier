@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyplier"
-version = "1.1.1"
+version = "1.2.0"
 description = "Python reimplementation of PLIER"
 authors = ["milescsmith <mileschristiansmith@gmail.com>"]
 license = "MPL2.0"
@@ -43,6 +43,8 @@ dill = "^0.3.4"
 deepdiff = "^5.8.1"
 bandit = "^1.7.4"
 pytest-cov = "^3.0.0"
+vprof = "^0.38"
+snakeviz = "^2.1.1"
 
 [tool.poetry.extras]
 fastcluster = ["fastcluster"]

@@ -135,9 +135,11 @@ def plotTopZ(
 
     nn = np.concatenate(nnz_ranks)
 
-    nncol = plierRes.B.index[plierRes.Z.columns.isin(ii)].repeat(
-        [len(_) for _ in nnz_ranks]
-    ).to_series()
+    nncol = (
+        plierRes.B.index[plierRes.Z.columns.isin(ii)]
+        .repeat([len(_) for _ in nnz_ranks])
+        .to_series()
+    )
 
     nnpath = pd.concat(
         [
@@ -194,7 +196,7 @@ def plotTopZ(
             "pathway": nncol.map(pathway_lut).values,
             "present": nnpath.map(present_lut).values,
         },
-        index=nnpath.index
+        index=nnpath.index,
     )
 
     g = sns.clustermap(

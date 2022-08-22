@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 # from numba import jit
 from scipy.linalg import LinAlgError, svd
 
@@ -23,7 +24,7 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
 
     Params
     ------
-    df: :class:`pd.DataFrame`
+    df: :class:`~pd.DataFrame`
 
     alfa: `int`
         ridge penality adjustment
@@ -48,6 +49,7 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
         di = d
     out = v.transpose() @ np.multiply(1 / di, u).transpose()
 
+    # TODO:do we really need to return a dataframe?  is an array not sufficient?
     out_df = pd.DataFrame(out, columns=df.columns, index=df.index)
 
     return out_df
