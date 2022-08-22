@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0] - 2022-08-22
+
+## Changed
+
+- revert newer (3.9+) style typing soas to reenable Python 3.8
+
 ## [1.2.0] - 2022-08-22
 
 ### Changed
@@ -177,7 +183,7 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Add icontract-based function input validation to some functions
 
 
-[1.2.1]: https://github.com/milescsmith/pyplier/releases/compare/1.1.1..1.2.0
+[1.2.0]: https://github.com/milescsmith/pyplier/releases/compare/1.1.1..1.2.0
 [1.1.1]: https://github.com/milescsmith/pyplier/releases/compare/1.1.0..1.1.1
 [1.1.0]: https://github.com/milescsmith/pyplier/releases/compare/1.0.1..1.1.0
 [1.0.1]: https://github.com/milescsmith/pyplier/releases/compare/1.0.0..1.0.1

@@ -5,7 +5,6 @@ from typing import Optional, TypedDict, Union
 import numpy as np
 import pandas as pd
 from glmnet import ElasticNet
-from scipy.stats import rankdata
 from tqdm.auto import trange
 
 

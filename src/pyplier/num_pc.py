@@ -1,6 +1,6 @@
 import random
 from functools import singledispatch
-from typing import Union
+from typing import Union, Dict, Tuple
 
 import numpy as np
 from icontract import ensure, require
@@ -13,7 +13,7 @@ from sklearn.utils.extmath import randomized_svd
 
 @ensure(lambda result: result > 0)
 def num_pc(
-    data: Union[dict[str, np.ndarray], np.ndarray],
+    data: Union[Dict[str, np.ndarray], np.ndarray],
     method: str = None,
     B: int = 20,
     seed: int = None,
@@ -81,7 +81,7 @@ def compute_uu(data, **kwargs):
 
 
 @compute_uu.register
-def _(data: np.ndarray, **kwargs) -> tuple[np.ndarray, str]:
+def _(data: np.ndarray, **kwargs) -> Tuple[np.ndarray, str]:
     rprint("Computing svd")
     scaler = StandardScaler()
     data = scaler.fit_transform(data.T)
@@ -90,7 +90,7 @@ def _(data: np.ndarray, **kwargs) -> tuple[np.ndarray, str]:
 
 
 @compute_uu.register
-def _(data: dict, **kwargs):
+def _(data: dict, **kwargs) -> Tuple[np.ndarray, str]:
     if data["d"] is not None:
         if kwargs["method"] == "permutation":
             rprint(

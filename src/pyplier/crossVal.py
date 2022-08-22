@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import TypeVar
+from typing import TypeVar, Dict
 
 import numpy as np
 import pandas as pd
@@ -14,7 +14,7 @@ PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 def crossVal(
     plierRes: PLIERResults, priorMat: pd.DataFrame, priorMatcv: pd.DataFrame
-) -> dict[str, pd.DataFrame]:
+) -> Dict[str, pd.DataFrame]:
     """
     crossVal
 

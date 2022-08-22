@@ -1,4 +1,4 @@
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, List, Tuple
 
 import matplotlib.colors as mcolors
 import numpy as np
@@ -51,7 +51,7 @@ def plotTopZ(
     data: pd.DataFrame,
     priorMat: pd.DataFrame,
     top: int = 10,
-    index: Optional[list[str]] = None,
+    index: Optional[List[str]] = None,
     regress: bool = False,
     allLVs: bool = False,
     colormap: str = "viridis",
@@ -64,7 +64,7 @@ def plotTopZ(
     show_cbar: bool = False,
     show_legend: bool = True,
     shuffle_pathway_pal: bool = False,
-    figsize: tuple[int] = (9, 9),
+    figsize: Tuple[int] = (9, 9),
     *args,
     **kwargs,
 ) -> ClusterGrid:
@@ -323,8 +323,8 @@ def plotU(
     plierRes: PLIERRes,
     auc_cutoff: float = 0.6,
     fdr_cutoff: float = 0.05,
-    indexCol: Optional[list[str]] = None,
-    indexRow: Optional[list[str]] = None,
+    indexCol: Optional[List[str]] = None,
+    indexRow: Optional[List[str]] = None,
     top: int = 3,
     sort_row: bool = False,
     *args,
