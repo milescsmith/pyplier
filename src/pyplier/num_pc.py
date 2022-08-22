@@ -5,10 +5,11 @@ from typing import Union
 import numpy as np
 from icontract import ensure, require
 from pysmooth import smooth
+from rich import print as rprint
 from scipy.linalg import svd
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.extmath import randomized_svd
-from rich import print as rprint
+
 
 @ensure(lambda result: result > 0)
 def num_pc(

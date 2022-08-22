@@ -9,13 +9,13 @@ try:
 except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 
-import rich
 import logging
+
 import structlog
 
-from .plier import PLIER
 from .pathways import combinePaths, pathwayFromGMT
-
+from .plier import PLIER
+from .PLIERRes import PLIERResults
 
 plier_logger = structlog.get_logger()
 

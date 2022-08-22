@@ -24,9 +24,9 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
 
     Params
     ------
-    df: :class:`pd.DataFrame`
+    df: :class:`~pd.DataFrame`
 
-    alfa: `int` 
+    alfa: `int`
         ridge penality adjustment
 
     """
@@ -34,10 +34,14 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
     if df.shape[0] != df.shape[1]:
         raise LinAlgError("Non-symmetric matrix")
 
-    u, d, v = svd(df) # note: compared to the R version of svd, the v matrix is returned transposed
+    u, d, v = svd(
+        df
+    )  # note: compared to the R version of svd, the v matrix is returned transposed
 
     if len(d) == 0:
-        return pd.DataFrame(np.zeros(tuple(reversed(m.shape))), columns=df.columns, index=df.index)
+        return pd.DataFrame(
+            np.zeros(tuple(reversed(m.shape))), columns=df.columns, index=df.index
+        )
 
     if alfa > 0:
         di = (np.power(d, 2) + alfa**2) / d
@@ -45,6 +49,7 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
         di = d
     out = v.transpose() @ np.multiply(1 / di, u).transpose()
 
+    # TODO:do we really need to return a dataframe?  is an array not sufficient?
     out_df = pd.DataFrame(out, columns=df.columns, index=df.index)
 
     return out_df

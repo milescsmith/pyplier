@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0] - 2022-08-22
+
+### Changed
+
+- Simplified `solveU`
+
+## [1.1.1] - 2022-08-17
+
+### Fixed
+
+- Should probably actually try using `pyplier.plotting.plotTopZ` before pushing.
+
+## [1.1.0] - 2022-08-17
+
+### Fixed
+
+- `pyplier.plotting.plotTopZ` actually works now.
+
 ## [1.0.1] - 2022-08-15
 
 ### Fixed
@@ -158,12 +176,21 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Import functions into __init__ to simplify intramodule use
 - Add icontract-based function input validation to some functions
 
-[0.10.0]: https://github.com/milescsmith/pyplier/releases/compare/0.11.0..0.12.0
-[0.10.0]: https://github.com/milescsmith/pyplier/releases/compare/0.10.0..0.11.0
-[0.9.0]: https://github.com/milescsmith/pyplier/releases/compare/0.9.0..0.10.0
+
+[1.2.1]: https://github.com/milescsmith/pyplier/releases/compare/1.1.1..1.2.0
+[1.1.1]: https://github.com/milescsmith/pyplier/releases/compare/1.1.0..1.1.1
+[1.1.0]: https://github.com/milescsmith/pyplier/releases/compare/1.0.1..1.1.0
+[1.0.1]: https://github.com/milescsmith/pyplier/releases/compare/1.0.0..1.0.1
+[1.0.0]: https://github.com/milescsmith/pyplier/releases/compare/0.14.0..1.0.0
+[0.14.0]: https://github.com/milescsmith/pyplier/releases/compare/0.13.1..0.14.0
+[0.13.1]: https://github.com/milescsmith/pyplier/releases/compare/0.13.0..0.13.1
+[0.13.0]: https://github.com/milescsmith/pyplier/releases/compare/0.12.0..0.13.0
+[0.12.0]: https://github.com/milescsmith/pyplier/releases/compare/0.11.0..0.12.0
+[0.11.0]: https://github.com/milescsmith/pyplier/releases/compare/0.10.0..0.11.0
+[0.10.0]: https://github.com/milescsmith/pyplier/releases/compare/0.9.0..0.10.0
 [0.9.0]: https://github.com/milescsmith/pyplier/releases/compare/0.8.0..0.9.0
 [0.8.0]: https://github.com/milescsmith/pyplier/releases/compare/0.7.0..0.8.0
 [0.7.0]: https://github.com/milescsmith/pyplier/releases/compare/0.6.2..0.7.0
 [0.6.2]: https://github.com/milescsmith/pyplier/releases/compare/0.6.1..0.6.2
-[0.6.i]: https://github.com/milescsmith/pyplier/releases/compare/0.6.0..0.6.1
+[0.6.1]: https://github.com/milescsmith/pyplier/releases/compare/0.6.0..0.6.1
 [0.6.0]: https://github.com/milescsmith/pyplier/releases/tag/0.6.0

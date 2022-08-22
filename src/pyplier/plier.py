@@ -1,5 +1,5 @@
 import random
-from math import floor, ceil
+from math import ceil, floor
 from typing import TypeVar
 
 import numpy as np
@@ -11,12 +11,12 @@ from scipy.linalg import solve, svd
 from sklearn.utils.extmath import randomized_svd
 from tqdm.auto import tqdm, trange
 
-from .crossVal import crossVal
 from .AUC import getAUC
+from .crossVal import crossVal
 from .nameB import nameB
 from .num_pc import num_pc
-from .regression import pinv_ridge
 from .PLIERRes import PLIERResults
+from .regression import pinv_ridge
 from .solveU import solveU
 from .utils import crossprod, rowNorm, setdiff, tcrossprod
 
@@ -27,7 +27,7 @@ PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 def PLIER(
     data: pd.DataFrame,  # for anndata objects, this will need to be transposed
     priorMat: pd.DataFrame,
-    svdres=None,
+    svdres: np.ndarray = None,
     num_LVs: float = None,
     L1: float = None,
     L2: float = None,
@@ -36,7 +36,7 @@ def PLIER(
     max_iter: int = 350,
     trace: bool = False,
     scale: bool = True,
-    Chat=None,
+    Chat: np.ndarray = None,
     maxPath: int = 10,
     doCrossval: bool = True,
     penalty_factor: np.ndarray = None,
@@ -52,13 +52,13 @@ def PLIER(
 
     Parameters
     ----------
-    data : pd.DataFrame
+    data : :class:`~pd.DataFrame`
         the data to be processed with genes in rows and samples in columns.
         Should be z-scored or set scale=True
-    priorMat : pd.DataFrame
+    priorMat : :class:`~pd.DataFrame`
         the binary prior information matrix with genes in rows and
         pathways/genesets in columns
-    svdres : [type], optional
+    svdres : :class:`~np.ndarray`, optional
         Pre-computed result of the svd decomposition for data, by default None
     num_LVs : float, optional
         The number of latent variables to return, leave as None to be set
@@ -77,7 +77,7 @@ def PLIER(
         Display progress information, by default False
     scale : bool, optional
         Z-score the data before processing, by default True
-    Chat : [type], optional
+    Chat : :class:`~np.ndarray`, optional
         A ridge inverse of priorMat, used to select active pathways, expensive to compute so can be precomputed when running PLIER multiple times. Defaults to None.
     maxPath : int, optional
         The maximum number of active pathways per latent variable. Defaults to 10.
@@ -171,7 +171,10 @@ def PLIER(
         if ns > 500:
             rprint("Using rsvd")
             svdres["u"], svdres["d"], svdres["v"] = randomized_svd(
-                M=Y.values, n_components=ceil(min(ns, max(200, ns / 4))), n_iter=3
+                M=Y.values,
+                n_components=ceil(min(ns, max(200, ns / 4))),
+                n_iter=3,
+                random_state=None,
             )
         else:
             svdres["u"], svdres["d"], svdres["v"] = svd(

@@ -2,18 +2,21 @@ import gzip
 import json
 from collections import defaultdict
 from pathlib import Path
-from rich import print as rprint
 
 import numpy as np
 import pandas as pd
+from icontract import require
+from rich import print as rprint
 from tqdm.auto import tqdm
 
-from icontract import require
 from .utils import getCutoff
 
 
+# TODO: should we keep the original source data as part of this object?
+# TODO: should we keep the priorMat as part of this object?  Maybe make `PLIER` a member function?
 class PLIERResults(object):
     def __init__(
+        # TODO: consider making some of these csc_matrices
         self,
         B: pd.DataFrame = pd.DataFrame(),
         Z: pd.DataFrame = pd.DataFrame(),
@@ -187,7 +190,9 @@ class PLIERResults(object):
         pr = cls().from_dict(input_dict)
         return pr
 
-    def to_markers(self, priorMat: pd.DataFrame, num: int = 20, index: list[str] = None) -> pd.DataFrame:
+    def to_markers(
+        self, priorMat: pd.DataFrame, num: int = 20, index: list[str] = None
+    ) -> pd.DataFrame:
         ii = self.U.columns[
             np.where(self.U.sum(axis=0) > 0)
         ]  # ii <- which(colsums(plierRes$U, parallel = TRUE) > 0)
@@ -232,7 +237,6 @@ class PLIERResults(object):
         tag = tag.apply(lambda x: x <= num).astype(int)  # tag <- (tag <= num) + 1 - 1
 
         return tag
-
 
     @require(lambda ngenes: ngenes > 0)
     def getEnrichmentVals(

@@ -1,17 +1,17 @@
-from typing import Union, TypeVar
 from math import floor
+from typing import TypeVar, Union
 
 import numpy as np
 import pandas as pd
+from rich import print as rprint
+from scipy.linalg import solve
 from scipy.optimize import brentq
 from scipy.stats import mannwhitneyu, norm, rankdata
-from scipy.linalg import solve
 from statsmodels.stats.multitest import multipletests
 from typeguard import typechecked
-from rich import print as rprint
 
 from .PLIERRes import PLIERResults
-from .utils import crossprod, tcrossprod, copyMat
+from .utils import copyMat, crossprod, tcrossprod
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
@@ -51,6 +51,31 @@ def mannwhitneyu_conf_int(
     correct: bool = False,
     alternative: str = "two_sided",
 ) -> tuple[float, float]:
+    """Essentially a straight-up transliteration of the the _wilcox.test function in R's {stats} library
+    Necessary since the scipy.stats.mannwhitneyu does not return confidence intervals
+
+    Parameters
+    ----------
+    x : Union[list[float], pd.Series]
+        _description_
+    y : Union[list[float], pd.Series]
+        _description_
+    alpha : float, optional
+        _description_, by default 0.05
+    tol_root : float, optional
+        _description_, by default 1e-4
+    digits_rank : float, optional
+        _description_, by default np.inf
+    correct : bool, optional
+        _description_, by default False
+    alternative : str, optional
+        _description_, by default "two_sided"
+
+    Returns
+    -------
+    tuple[float, float]
+        _description_
+    """
     mumin = min(x) - max(y)
     mumax = max(x) - min(y)
 
@@ -90,9 +115,7 @@ def mannwhitneyu_conf_int(
         )
 
         if sigma_ci == 0:
-            rprint(
-                "cannot compute confidence interval when all observations are tied"
-            )
+            rprint("cannot compute confidence interval when all observations are tied")
 
         try:
             result = np.divide(np.subtract(dz, correction_ci), sigma_ci)
