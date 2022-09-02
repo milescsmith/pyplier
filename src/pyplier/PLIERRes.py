@@ -13,6 +13,7 @@ from tqdm.auto import tqdm
 
 # TODO: should we keep the original source data as part of this object?
 # TODO: should we keep the priorMat as part of this object?  Maybe make `PLIER` a member function?
+# TODO: JSON is incredibly slow - we need an h5 or zarr option.
 class PLIERResults(object):
     def __init__(
         # TODO: consider making some of these csc_matrices
