@@ -9,6 +9,22 @@ try:
 except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 
+__all__ = [
+    "AUC",
+    "crossVal",
+    "nameB",
+    "nonEstimable",
+    "num_pc",
+    "pathways",
+    "plier",
+    "PLIERRes",
+    "plotting",
+    "regression",
+    "solveU",
+    "utils",
+    "VarianceExplained",
+]
+
 import logging
 
 import structlog
