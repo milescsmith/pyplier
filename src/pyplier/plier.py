@@ -162,23 +162,26 @@ def PLIER(
         rprint("SVD V has the wrong number of columns")
         svdres = None
 
-    if Y.isnull().to_numpy().any():
-        Y.fillna(0, inplace=True)
+    Y_arr = np.nan_to_num(Y)
+    Y_arr = np.where(np.isposinf(Y_arr), np.finfo(np.float32).max, Y_arr)
+    Y_arr = np.where(np.isneginf(Y_arr), np.finfo(np.float32).min, Y_arr)
 
     if svdres is None:
         svdres = dict()
         rprint("Computing SVD")
         if ns > 500:
             rprint("Using rsvd")
+            # TODO: we *have* to accelerate this using pytorch or the like
+            # sklearn is fragile and cannot handle it and a 30k x 30k matrix is killing it
             svdres["u"], svdres["d"], svdres["v"] = randomized_svd(
-                M=Y.values,
+                M=Y_arr,
                 n_components=ceil(min(ns, max(200, ns / 4))),
                 n_iter=3,
                 random_state=None,
             )
         else:
             svdres["u"], svdres["d"], svdres["v"] = svd(
-                Y, lapack_driver="gesdd"
+                Y_arr, lapack_driver="gesdd"
             )  # the gesvd driver flips the sign for components > 6 in the v matrix as compared to R's svd function
         rprint("Done")
         svdres["v"] = svdres[
@@ -187,7 +190,7 @@ def PLIER(
 
     if num_LVs is None:
         num_LVs = num_pc(svdres) * 2
-        num_LVs = min(num_LVs, floor(Y.shape[1] * 0.9))
+        num_LVs = min(num_LVs, floor(Y_arr.shape[1] * 0.9))
         rprint(f"The number of LVs is set to {num_LVs}")
 
     if L2 is None:
@@ -199,7 +202,7 @@ def PLIER(
         rprint(f"L1 is set to {L1}")
 
     B = (
-        svdres["v"][0 : Y.shape[1], 0:num_LVs] @ np.diag(svdres["d"][0:num_LVs])
+        svdres["v"][0 : Y_arr.shape[1], 0:num_LVs] @ np.diag(svdres["d"][0:num_LVs])
     ).transpose()
 
     # following two lines are equivalent to R's diag(x)
