@@ -5,6 +5,13 @@
 ### Fixed
 
 - Better handling for NaNs and Inf values in the normalized data when running `plier()`
+- Explictly list submodules as part of `__all__` in `__init__.py` to hopefully solve certain submodules
+  not being available when importing the main module
+
+### Misc
+
+- Update dependencies
+- Cleanup testing data
 
 ## [1.3.0] - 2022-08-22
 
