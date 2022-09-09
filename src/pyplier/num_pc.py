@@ -1,6 +1,6 @@
 import random
 from functools import singledispatch
-from typing import Union, Dict, Tuple
+from typing import Dict, Tuple, Union
 
 import numpy as np
 from icontract import ensure, require

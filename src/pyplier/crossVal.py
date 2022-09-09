@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from typing import TypeVar, Dict
+from typing import Dict, TypeVar
 
 import numpy as np
 import pandas as pd

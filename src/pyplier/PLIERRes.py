@@ -2,11 +2,12 @@ import gzip
 import json
 from collections import defaultdict
 from pathlib import Path
+from re import findall
 from typing import Dict, List
 
+import h5py
 import numpy as np
 import pandas as pd
-
 from rich import print as rprint
 from tqdm.auto import tqdm
 
@@ -31,6 +32,10 @@ class PLIERResults(object):
         Up: pd.DataFrame = pd.DataFrame(),
         summary: pd.DataFrame = pd.DataFrame(),
         residual: pd.DataFrame = pd.DataFrame(),
+        # TODO: gotta think about how to implement using the hdf5 backing file
+        # instead of copying everything into memory
+        # backed: bool = False,
+        # backing_file: Optional[Path] = None,
     ):
         self.residual = residual
         self.B = B
@@ -45,6 +50,7 @@ class PLIERResults(object):
         self.Uauc = Uauc
         self.Up = Up
         self.summary = summary
+        # self.backed = backed
 
     def __repr__(self) -> str:
         return (
@@ -112,6 +118,9 @@ class PLIERResults(object):
                 rprint("[red]residual[/red] is unequal")
             return False
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
     def to_dict(self):
         return {
             "B": self.B.to_dict(),
@@ -129,7 +138,7 @@ class PLIERResults(object):
             "summary": self.summary.to_dict(),
         }
 
-    def to_disk(self, loc: Path, compress: bool = False) -> bool:
+    def to_json(self, loc: Path, compress: bool = False) -> bool:
         if not isinstance(loc, Path):
             loc = Path(loc)
         if compress or loc.suffix == ".gz":
@@ -139,6 +148,55 @@ class PLIERResults(object):
             with open(loc, "w") as jsonfile:
                 json.dump(obj=self.to_dict(), fp=jsonfile)
         return True
+
+    def to_hdf5(self, loc: Path, overwrite: bool = False) -> bool:
+        if not isinstance(loc, Path):
+            loc = Path(loc)
+
+        def encode_df(h5: h5py._hl.files.File, df: pd.DataFrame, key: str):
+            new_group = h5.create_group(f"{key}")
+            new_group["data"] = df.to_numpy()
+            new_group["index"] = df.index.tolist()
+            new_group["columns"] = df.columns.tolist()
+
+        def encode_dict(
+            h5: h5py._hl.files.File, dc: Dict[str, List[str]], key: str, dtype=None
+        ):
+            dict_group = h5.create_group(f"{key}")
+            for k in dc:
+                if isinstance(dc[k], list):
+                    dict_group.create_dataset(
+                        k, dtype=dtype, shape=(len(dc[k]),), data=dc[k]
+                    )
+                else:
+                    dict_group.create_dataset(k, dtype=dtype, shape=(1,), data=dc[k])
+
+        if (loc.exists() is True) and (overwrite is False):
+            print(
+                "File already exists. If you wish to overwrite, please rerun with 'overwrite=True'"
+            )
+        else:
+            if loc.exists():
+                loc.unlink()
+            with h5py.File(loc, mode="a") as store:
+                for df_member in (
+                    "B",
+                    "Z",
+                    "U",
+                    "C",
+                    "Uauc",
+                    "Up",
+                    "summary",
+                    "residual",
+                ):
+                    encode_df(h5=store, df=self[df_member], key=df_member)
+
+                store.create_dataset("L1", (1,), dtype=float, data=self.L1)
+                store.create_dataset("L2", (1,), dtype=float, data=self.L2)
+                store.create_dataset("L3", (1,), dtype=float, data=self.L3)
+
+                encode_dict(h5=store, dc=self.heldOutGenes, key="heldOutGenes")
+                encode_dict(h5=store, dc=self.withPrior, key="withPrior", dtype=int)
 
     @classmethod
     def from_dict(cls, source):
@@ -175,7 +233,7 @@ class PLIERResults(object):
         return pr
 
     @classmethod
-    def from_disk(cls, loc: Path):
+    def read_json(cls, loc: Path):
         """TODO: switch to using something like HDF5 or parquet for storage"""
         if str(loc).endswith(".gz"):
             with gzip.open(loc, "rt", encoding="UTF-8") as infile:
@@ -190,10 +248,63 @@ class PLIERResults(object):
         pr = cls().from_dict(input_dict)
         return pr
 
+    @classmethod
+    def read_hdf5(cls, loc: Path):
+        def decode_df(
+            h5: h5py._hl.files.File, group: str, codec="UTF-8"
+        ) -> pd.DataFrame:
+            df = pd.DataFrame(
+                data=h5[group]["data"],
+                index=pd.Series(h5[group]["index"]).str.decode(codec),
+                columns=pd.Series(h5[group]["columns"]).str.decode(codec),
+            )
+            return df
+
+        def decode_dict(h5: h5py._hl.files.File, group: str) -> Dict[str, List[str]]:
+            decoded_dict = {
+                k: (
+                    h5[group][k][0]
+                    if h5[group][k].dtype == int
+                    else np.char.array(h5[group][k]).decode().tolist()
+                )
+                for k in h5[group].keys()
+            }
+            return decoded_dict
+
+        def only_int(x):
+            return int(findall(r"[0-9]+", x)[0])
+
+        try:
+            with h5py.File(loc, mode="r") as store:
+                withPrior = decode_dict(store, "withPrior")
+
+                pr = cls(
+                    B=decode_df(store, "B"),
+                    Z=decode_df(store, "Z"),
+                    U=decode_df(store, "U"),
+                    C=decode_df(store, "C"),
+                    L1=store["L1"][0],
+                    L2=store["L2"][0],
+                    L3=store["L3"][0],
+                    heldOutGenes=decode_dict(store, "heldOutGenes"),
+                    withPrior={
+                        k: withPrior[k] for k in sorted(withPrior, key=only_int)
+                    },
+                    Uauc=decode_df(store, "Uauc"),
+                    Up=decode_df(store, "Up"),
+                    summary=decode_df(store, "summary"),
+                    residual=decode_df(store, "residual"),
+                )
+            return pr
+        except FileNotFoundError:
+            print(f"no such file was found at {str(loc)}")
+
     def to_markers(
         self, priorMat: pd.DataFrame, num: int = 20, index: List[str] = None
     ) -> pd.DataFrame:
-        ii = self.U.columns[self.U.sum(axis=0) > 0]  # ii <- which(colsums(plierRes$U, parallel = TRUE) > 0)
+        ii = self.U.columns[
+            self.U.sum(axis=0) > 0
+        ]  # ii <- which(colsums(plierRes$U, parallel = TRUE) > 0)
 
         if index is not None:
             ii = np.intersect1d(ii, index)

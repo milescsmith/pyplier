@@ -24,7 +24,9 @@ typeguard = "^2.13.3"
 structlog = "^22.0.0"
 seaborn = "^0.11.2"
 scikit-learn = "^1.1.1"
-fastcluster = {version = "^1.2.6", optional = true}
+fastcluster = {version = "^1.2.6", optional = true } #, extras = ["fastcluster", "all"]}
+tables = {version = "^3.7.0", optional = true } #, extras = ["hdf5", "all"]}
+h5py = {version = "^3.7.0", optional = true } #, extras = ["hdf5", "all"]}
 
 [tool.poetry.dev-dependencies]
 mypy = "flake8"
@@ -45,10 +47,12 @@ bandit = "^1.7.4"
 pytest-cov = "^3.0.0"
 vprof = "^0.38"
 snakeviz = "^2.1.1"
+jupyterlab = "^3.4.6"
 
 [tool.poetry.extras]
 fastcluster = ["fastcluster"]
-all = ["fastcluster"]
+hdf5 = ["tables", "h5py"]
+all = ["tables", "h5py", "fastcluster"]
 
 [tool.isort]
 src_paths = ["src", "tests"]

@@ -1,4 +1,4 @@
-from typing import Optional, TypeVar, List, Tuple
+from typing import List, Optional, Tuple, TypeVar
 
 import matplotlib.colors as mcolors
 import numpy as np
@@ -241,8 +241,8 @@ def plotTopZallPath(
 ) -> None:
     """
     visualize the top genes contributing to the LVs similarily to [plotTopZ()].
-        However in this case all the pathways contributing to each LV are show
-        seperatly. Useful for seeing pathway usage for a single LV or
+        However in this case all the pathways contributing to each LV are shown
+        seperately. Useful for seeing pathway usage for a single LV or
         understading the differences between two closely related LVs
 
     Parameters
