@@ -1,5 +1,5 @@
 from math import floor
-from typing import TypeVar, Union, Dict, List
+from typing import Dict, List, TypeVar, Union
 
 import numpy as np
 import pandas as pd

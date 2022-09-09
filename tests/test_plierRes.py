@@ -136,5 +136,5 @@ def test_plierRes_to_disk():
 def test_plierRes_from_disk(test_plierRes: PLIERResults):
     test_file = ir.files("tests").joinpath("data/plierRes/plierRes.json.gz")
     with ir.as_file(test_file) as tf:
-        tf_obj = PLIERResults().from_disk(tf)
+        tf_obj = PLIERResults().read_json(tf)
     assert test_plierRes == tf_obj

@@ -1,6 +1,6 @@
 import warnings
 from copy import deepcopy
-from typing import Optional, TypedDict, Union
+from typing import Optional, TypedDict
 
 import numpy as np
 import pandas as pd
