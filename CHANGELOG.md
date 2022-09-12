@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.1] - 2022-09-12
+
+### Fixed
+
+- Removed stray `glmnet-py` dep
+
 ## [1.5.0] - 2022-09-09
 
 ### Added
@@ -209,6 +215,7 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Add icontract-based function input validation to some functions
 
 
+[1.5.1]: https://github.com/milescsmith/pyplier/releases/compare/1.5.0..1.5.1
 [1.5.0]: https://github.com/milescsmith/pyplier/releases/compare/1.4.0..1.5.0
 [1.4.0]: https://github.com/milescsmith/pyplier/releases/compare/1.3.0..1.4.0
 [1.3.0]: https://github.com/milescsmith/pyplier/releases/compare/1.2.0..1.3.0
