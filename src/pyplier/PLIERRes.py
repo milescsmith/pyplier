@@ -155,7 +155,12 @@ class PLIERResults(object):
 
         def encode_df(h5: h5py._hl.files.File, df: pd.DataFrame, key: str):
             new_group = h5.create_group(f"{key}")
-            new_group["data"] = df.to_numpy()
+            if any(df.dtypes == "object"):
+                new_group["data"] = df.apply(
+                    lambda x: x.astype(bytes) if x.dtype == "object" else x
+                ).to_numpy()
+            else:
+                new_group["data"] = df.to_numpy()
             new_group["index"] = df.index.tolist()
             new_group["columns"] = df.columns.tolist()
 
@@ -249,15 +254,15 @@ class PLIERResults(object):
         return pr
 
     @classmethod
-    def read_hdf5(cls, loc: Path):
+    def read_hdf5(cls, loc: Path, codec: str = "UTF-8"):
         def decode_df(
-            h5: h5py._hl.files.File, group: str, codec="UTF-8"
+            h5: h5py._hl.files.File, group: str, codec: str = codec
         ) -> pd.DataFrame:
             df = pd.DataFrame(
                 data=h5[group]["data"],
                 index=pd.Series(h5[group]["index"]).str.decode(codec),
                 columns=pd.Series(h5[group]["columns"]).str.decode(codec),
-            )
+            ).apply(lambda x: x.str.decode(codec) if x.dtype == "object" else x)
             return df
 
         def decode_dict(h5: h5py._hl.files.File, group: str) -> Dict[str, List[str]]:

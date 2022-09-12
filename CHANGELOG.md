@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.2] - 2022-09-12
+
+### Fixed
+
+- Fixed an issue where a PLIERResults object could not be saved as hdf5 because of the "LV index" text column in the
+  summary dataframe
+
+
 ## [1.5.1] - 2022-09-12
 
 ### Fixed
@@ -215,6 +223,7 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Add icontract-based function input validation to some functions
 
 
+[1.5.2]: https://github.com/milescsmith/pyplier/releases/compare/1.5.1..1.5.2
 [1.5.1]: https://github.com/milescsmith/pyplier/releases/compare/1.5.0..1.5.1
 [1.5.0]: https://github.com/milescsmith/pyplier/releases/compare/1.4.0..1.5.0
 [1.4.0]: https://github.com/milescsmith/pyplier/releases/compare/1.3.0..1.4.0
