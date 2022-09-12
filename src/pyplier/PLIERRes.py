@@ -156,9 +156,7 @@ class PLIERResults(object):
         def encode_df(h5: h5py._hl.files.File, df: pd.DataFrame, key: str):
             new_group = h5.create_group(f"{key}")
             if any(df.dtypes == "object"):
-                new_group["data"] = df.apply(
-                    lambda x: x.astype(bytes) if x.dtype == "object" else x
-                ).to_numpy()
+                new_group["data"] = df.to_numpy().astype(bytes)
             else:
                 new_group["data"] = df.to_numpy()
             new_group["index"] = df.index.tolist()
@@ -297,7 +295,19 @@ class PLIERResults(object):
                     },
                     Uauc=decode_df(store, "Uauc"),
                     Up=decode_df(store, "Up"),
-                    summary=decode_df(store, "summary"),
+                    summary=decode_df(
+                        store,
+                        "summary"
+                        ).apply(
+                            lambda x: x.str.decode("UTF-8")
+                        ).astype(
+                            {
+                                'LV index': str,
+                                'AUC': float,
+                                'p-value': float,
+                                'FDR': float
+                            }
+                        ),
                     residual=decode_df(store, "residual"),
                 )
             return pr
