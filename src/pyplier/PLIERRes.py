@@ -267,7 +267,7 @@ class PLIERResults(object):
             decoded_dict = {
                 k: (
                     h5[group][k][0]
-                    if h5[group][k].dtype == int
+                    if np.issubdtype(h5[group][k].dtype, np.number)
                     else np.char.array(h5[group][k]).decode().tolist()
                 )
                 for k in h5[group].keys()

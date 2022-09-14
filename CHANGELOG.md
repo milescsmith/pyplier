@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.5] - 2022-09-13
+
+### Fixed
+
+- saving non-integer numeric dictionaries in PLIERResults.withPrior to hdf5 no
+  longer results in their being inappropriately cast to integers
+
 ## [1.5.4] - 2022-09-13
 
 ### Added

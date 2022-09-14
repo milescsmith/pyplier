@@ -76,7 +76,7 @@ def solveU(
             max_features=150,
         )
 
-        for i in range(Z.shape[1]):
+        for i in trange(Z.shape[1]):
             if pathwaySelection == "fast":
                 iip = np.where([Ur.iloc[:, i] <= maxPath])[1]
 
