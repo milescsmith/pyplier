@@ -199,7 +199,7 @@ dev = ["Sphinx (==4.3.2)", "black (==22.3.0)", "build (==0.8.0)", "flake8 (==4.0
 
 [[package]]
 name = "certifi"
-version = "2022.6.15.1"
+version = "2022.6.15.2"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "dev"
 optional = false
@@ -488,16 +488,23 @@ gitdb = ">=4.0.1,<5"
 [[package]]
 name = "glmnet"
 version = "2.2.1"
-description = "Python wrapper for glmnet"
+description = ""
 category = "main"
 optional = false
 python-versions = ">=3.6.*"
+develop = false
 
 [package.dependencies]
 joblib = ">=0.14.1"
 numpy = ">=1.9.2"
 scikit-learn = ">=0.18.0"
 scipy = ">=0.14.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/replicahq/python-glmnet.git"
+reference = "HEAD"
+resolved_reference = "97905ffa7e59e377c3a2d11385df51ee04e1661f"
 
 [[package]]
 name = "h5py"
@@ -582,7 +589,7 @@ dev = ["black (==20.8b1)", "coverage (>=4.5.1,<5)", "deal (==4.4.0)", "docutils 
 
 [[package]]
 name = "idna"
-version = "3.3"
+version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
 category = "dev"
 optional = false
@@ -629,7 +636,7 @@ python-versions = "*"
 
 [[package]]
 name = "ipykernel"
-version = "6.15.2"
+version = "6.15.3"
 description = "IPython Kernel for Jupyter"
 category = "dev"
 optional = false
@@ -841,7 +848,7 @@ test = ["coverage", "ipykernel", "pre-commit", "pytest (>=6.0)", "pytest-console
 
 [[package]]
 name = "jupyterlab"
-version = "3.4.6"
+version = "3.4.7"
 description = "JupyterLab computational environment"
 category = "dev"
 optional = false
@@ -856,6 +863,7 @@ jupyterlab-server = ">=2.10,<3.0"
 nbclassic = "*"
 notebook = "<7"
 packaging = "*"
+tomli = "*"
 tornado = ">=6.1.0"
 
 [package.extras]
@@ -1090,7 +1098,7 @@ webpdf = ["pyppeteer (>=1,<1.1)"]
 
 [[package]]
 name = "nbformat"
-version = "5.4.0"
+version = "5.5.0"
 description = "The Jupyter Notebook format"
 category = "dev"
 optional = false
@@ -1099,11 +1107,11 @@ python-versions = ">=3.7"
 [package.dependencies]
 fastjsonschema = "*"
 jsonschema = ">=2.6"
-jupyter-core = "*"
+jupyter_core = "*"
 traitlets = ">=5.1"
 
 [package.extras]
-test = ["check-manifest", "pre-commit", "pytest", "testpath"]
+test = ["check-manifest", "pep440", "pre-commit", "pytest", "testpath"]
 
 [[package]]
 name = "nest-asyncio"
@@ -2069,7 +2077,7 @@ hdf5 = ["tables", "h5py"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8.3,<3.11"
-content-hash = "90a9f8a57fa23b3f11a993859485e85bc3f4d6abd1e019f9b30697f040c88a36"
+content-hash = "8c50a12b139b2b55ebc4d5cf04b04ea2e3ec174bf4c3b6a44ca711b553a3f994"
 
 [metadata.files]
 anyio = [
@@ -2169,8 +2177,8 @@ bleach = [
     {file = "bleach-5.0.1.tar.gz", hash = "sha256:0d03255c47eb9bd2f26aa9bb7f2107732e7e8fe195ca2f64709fcf3b0a4a085c"},
 ]
 certifi = [
-    {file = "certifi-2022.6.15.1-py3-none-any.whl", hash = "sha256:43dadad18a7f168740e66944e4fa82c6611848ff9056ad910f8f7a3e46ab89e0"},
-    {file = "certifi-2022.6.15.1.tar.gz", hash = "sha256:cffdcd380919da6137f76633531a5817e3a9f268575c128249fb637e4f9e73fb"},
+    {file = "certifi-2022.6.15.2-py3-none-any.whl", hash = "sha256:0aa1a42fbd57645fabeb6290a7687c21755b0344ecaeaa05f4e9f6207ae2e9a8"},
+    {file = "certifi-2022.6.15.2.tar.gz", hash = "sha256:aa08c101214127b9b0472ca6338315113c9487d45376fd3e669201b477c71003"},
 ]
 cffi = [
     {file = "cffi-1.15.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:a66d3508133af6e8548451b25058d5812812ec3798c886bf38ed24a98216fab2"},
@@ -2433,15 +2441,7 @@ GitPython = [
     {file = "GitPython-3.1.27-py3-none-any.whl", hash = "sha256:5b68b000463593e05ff2b261acff0ff0972df8ab1b70d3cdbd41b546c8b8fc3d"},
     {file = "GitPython-3.1.27.tar.gz", hash = "sha256:1c885ce809e8ba2d88a29befeb385fcea06338d3640712b59ca623c220bb5704"},
 ]
-glmnet = [
-    {file = "glmnet-2.2.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:5cd722447ef285fa77897f788ba6971cc3edd4d6d308e81549bf2c7db076815a"},
-    {file = "glmnet-2.2.1-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:1c93e9b53728eba6a24eb852674c048a16efd35a96894e2e5847fc3d8b15ff04"},
-    {file = "glmnet-2.2.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:def0820c5a9b6ba50a325f52c430b6df5e2eade52f14dce8d4642ce0a1c83b6f"},
-    {file = "glmnet-2.2.1-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:aa43a8b43b1713c0615ebc6b44558592ec61cb39df0c17c752066ed9501550f3"},
-    {file = "glmnet-2.2.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:383d4dcd52d135e75c507e04de30116380328696c02f3cbcd6fafd6bc24db82a"},
-    {file = "glmnet-2.2.1-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:e94c17af595055c64b70be4b7389ea9ba636cae4cb47933d32ba247d76c8bd7d"},
-    {file = "glmnet-2.2.1.tar.gz", hash = "sha256:3222bca2e901b3f60c2dc22df7aeba6bb9c7b6451b44cbbe1b91084b66f14481"},
-]
+glmnet = []
 h5py = [
     {file = "h5py-3.7.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d77af42cb751ad6cc44f11bae73075a07429a5cf2094dfde2b1e716e059b3911"},
     {file = "h5py-3.7.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:63beb8b7b47d0896c50de6efb9a1eaa81dbe211f3767e7dd7db159cea51ba37a"},
@@ -2480,8 +2480,8 @@ icontract-hypothesis = [
     {file = "icontract-hypothesis-1.1.7.tar.gz", hash = "sha256:40f5be35ae5a7d32b7058b579b1eb574367c80709de8bebb52bef685aa01662f"},
 ]
 idna = [
-    {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
-    {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
+    {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},
+    {file = "idna-3.4.tar.gz", hash = "sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-4.12.0-py3-none-any.whl", hash = "sha256:7401a975809ea1fdc658c3aa4f78cc2195a0e019c5cbc4c06122884e9ae80c23"},
@@ -2496,8 +2496,8 @@ iniconfig = [
     {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
 ]
 ipykernel = [
-    {file = "ipykernel-6.15.2-py3-none-any.whl", hash = "sha256:59183ef833b82c72211aace3fb48fd20eae8e2d0cae475f3d5c39d4a688e81ec"},
-    {file = "ipykernel-6.15.2.tar.gz", hash = "sha256:e7481083b438609c9c8a22d6362e8e1bc6ec94ba0741b666941e634f2d61bdf3"},
+    {file = "ipykernel-6.15.3-py3-none-any.whl", hash = "sha256:befe3736944b21afec8e832725e9a45f254c8bd9afc40b61d6661c97e45aff5a"},
+    {file = "ipykernel-6.15.3.tar.gz", hash = "sha256:b81d57b0e171670844bf29cdc11562b1010d3da87115c4513e0ee660a8368765"},
 ]
 ipython = [
     {file = "ipython-8.5.0-py3-none-any.whl", hash = "sha256:6f090e29ab8ef8643e521763a4f1f39dc3914db643122b1e9d3328ff2e43ada2"},
@@ -2544,8 +2544,8 @@ jupyter-server = [
     {file = "jupyter_server-1.18.1.tar.gz", hash = "sha256:2b72fc595bccae292260aad8157a0ead8da2c703ec6ae1bb7b36dbad0e267ea7"},
 ]
 jupyterlab = [
-    {file = "jupyterlab-3.4.6-py3-none-any.whl", hash = "sha256:dfe0234af957bfc8c5bb487cffe31d427cc9fd6de5760d226c382fac56529828"},
-    {file = "jupyterlab-3.4.6.tar.gz", hash = "sha256:e3599c8bc74cee064115f96e388cd27a2a7251b1dc02f4ad1bf8a7ff5270f179"},
+    {file = "jupyterlab-3.4.7-py3-none-any.whl", hash = "sha256:30c64bc0aa0ba09959ab6fd5c74f08a6ae64656b46a29e2522142a5fda0dc486"},
+    {file = "jupyterlab-3.4.7.tar.gz", hash = "sha256:4dc48ab0980e3af2e921dff26e0013dd03b104b1b67f0d85b67448e16e25311e"},
 ]
 jupyterlab-pygments = [
     {file = "jupyterlab_pygments-0.2.2-py2.py3-none-any.whl", hash = "sha256:2405800db07c9f770863bcf8049a529c3dd4d3e28536638bd7c1c01d2748309f"},
@@ -2869,8 +2869,8 @@ nbconvert = [
     {file = "nbconvert-7.0.0.tar.gz", hash = "sha256:fd1e361da30e30e4c5a5ae89f7cae95ca2a4d4407389672473312249a7ba0060"},
 ]
 nbformat = [
-    {file = "nbformat-5.4.0-py3-none-any.whl", hash = "sha256:0d6072aaec95dddc39735c144ee8bbc6589c383fb462e4058abc855348152dad"},
-    {file = "nbformat-5.4.0.tar.gz", hash = "sha256:44ba5ca6acb80c5d5a500f1e5b83ede8cbe364d5a495c4c8cf60aaf1ba656501"},
+    {file = "nbformat-5.5.0-py3-none-any.whl", hash = "sha256:eb21018bbcdb29e7a4b8b29068d4b6794cdad685db8fcd569b97a09a048dc2e4"},
+    {file = "nbformat-5.5.0.tar.gz", hash = "sha256:9ebe30e6c3b3e5b47d39ff0a3897a1acf523d2bfafcb4e2d04cdb70f8a66c507"},
 ]
 nest-asyncio = [
     {file = "nest_asyncio-1.5.5-py3-none-any.whl", hash = "sha256:b98e3ec1b246135e4642eceffa5a6c23a3ab12c82ff816a92c612d68205813b2"},
