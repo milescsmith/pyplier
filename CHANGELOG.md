@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.4] - 2022-09-13
+
+### Added
+
+- Automated unit testing on Github
+
+### Changed
+
+- Instead of using the stale civisanalytics/python-glmnet, switch to the slightly-less stale replicahq/python-glmnet
+  (which uses pep518-compliant install, obviating any issues with needing numpy installed prior to glmnet)
+
 ## [1.5.3] - 2022-09-12
 
 ### Fixed

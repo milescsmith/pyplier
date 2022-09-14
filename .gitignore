@@ -631,5 +631,5 @@ pbmc3k_data.csv.gz
 pbmc3k_U.csv.gz
 pbmc3k_Z.csv.gz
 pyplier.prof
-src/pyplier/nameB.py
 src/pyplier/debug.py
+CHANGELOG.md
