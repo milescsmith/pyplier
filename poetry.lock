@@ -488,7 +488,7 @@ gitdb = ">=4.0.1,<5"
 [[package]]
 name = "glmnet"
 version = "2.2.1"
-description = ""
+description = "Python wrapper for glmnet"
 category = "main"
 optional = false
 python-versions = ">=3.6.*"
@@ -511,7 +511,7 @@ name = "h5py"
 version = "3.7.0"
 description = "Read and write HDF5 files from Python"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
@@ -2070,14 +2070,13 @@ docs = ["jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)
 testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
 
 [extras]
-all = ["tables", "h5py", "fastcluster"]
+all = ["fastcluster"]
 fastcluster = ["fastcluster"]
-hdf5 = ["tables", "h5py"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8.3,<3.11"
-content-hash = "8c50a12b139b2b55ebc4d5cf04b04ea2e3ec174bf4c3b6a44ca711b553a3f994"
+content-hash = "6a6558dbca11303941aa22c217be264a89f3c8b9eb969f96c9e59c6a3ff18384"
 
 [metadata.files]
 anyio = [
