@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 from typeguard import typechecked
 
 from .PLIERRes import PLIERResults
-from .utils import rowNorm
+from .utils import zscore
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 ClusterGrid = TypeVar("ClusterGrid", bound="sns.matrix.ClusterGrid")
@@ -316,7 +316,7 @@ def plotTopZallPath(
         }
     )
 
-    sns.clustermap(rowNorm(data.loc[nn, :]), row_colors=annotation_row, *args, **kwargs)
+    sns.clustermap(data.loc[nn, :].apply(zscore, axis=1), row_colors=annotation_row, *args, **kwargs)
 
 
 def plotU(

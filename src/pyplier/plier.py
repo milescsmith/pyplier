@@ -18,7 +18,7 @@ from .num_pc import num_pc
 from .PLIERRes import PLIERResults
 from .regression import pinv_ridge
 from .solveU import solveU
-from .utils import crossprod, rowNorm, setdiff, tcrossprod
+from .utils import crossprod, zscore, setdiff, tcrossprod
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
@@ -110,7 +110,7 @@ def PLIER(
         penalty_factor = np.ones(priorMat.shape[1])
 
     if scale:
-        Y = rowNorm(data)
+        Y = data.apply(zscore, axis=1)
     else:
         Y = data
 

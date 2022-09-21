@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0] - 2022-09-21
+
+### Changed
+
+- replaced `pyplier.utils.rowNorm` with `pyplier.utils.zscore` as that is what it was anyway
+  - also, it is no self applies - you will need to run it over rows manually (i.e. df.apply(zscore, axis=1))
+- removed `pyplier.utils.colNorm` since it was unused
+
+### Fixed
+
+- `pyplier.utils.zscore` *should* be able to handle rows where all the values are the same (return 0, since all
+  values are right on the standard deviation of 0)
+
 ## [1.6.0] - 2022-09-21
 
 ### Fixed
