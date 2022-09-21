@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.0] - 2022-09-21
+
+### Fixed
+
+- fixed an issue when reading a PLIERResult object stored as an h5 has empty lists as part of the "heldOutGenes" member
+
 ## [1.5.5] - 2022-09-13
 
 ### Fixed

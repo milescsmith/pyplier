@@ -14,7 +14,6 @@ from tqdm.auto import tqdm
 
 # TODO: should we keep the original source data as part of this object?
 # TODO: should we keep the priorMat as part of this object?  Maybe make `PLIER` a member function?
-# TODO: JSON is incredibly slow - we need an h5 or zarr option.
 class PLIERResults(object):
     def __init__(
         # TODO: consider making some of these csc_matrices
@@ -266,9 +265,9 @@ class PLIERResults(object):
         def decode_dict(h5: h5py._hl.files.File, group: str) -> Dict[str, List[str]]:
             decoded_dict = {
                 k: (
-                    h5[group][k][0]
-                    if np.issubdtype(h5[group][k].dtype, np.number)
-                    else np.char.array(h5[group][k]).decode().tolist()
+                    list() if len(h5[group][k]) == 0 else
+                    h5[group][k][0] if np.issubdtype(h5[group][k].dtype, np.number) else
+                    np.char.array(h5[group][k]).decode().tolist()
                 )
                 for k in h5[group].keys()
             }
