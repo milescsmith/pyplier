@@ -13,7 +13,7 @@ PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 
 def crossVal(
-    plierRes: PLIERResults, priorMat: pd.DataFrame, priorMatcv: pd.DataFrame
+    plierRes: PLIERResults, priorMat: pd.DataFrame, priorMatcv: pd.DataFrame, disable_progress: bool = False, persistent_progress: bool=True
 ) -> Dict[str, pd.DataFrame]:
     """
     crossVal
@@ -25,6 +25,10 @@ def crossVal(
         the real prior info matrix
     priorMatcv : :class:`pandas.DataFrame`
         the zeroed-out prior info matrix used for PLIER computations
+    persistent_progress : bool
+        Should the progress bar progress be kept after completion? Defaults to True.
+    disable_progress : 
+        Should progress bars be disabled? Defaults to False.
 
     Returns
     -------
@@ -47,10 +51,10 @@ def crossVal(
         columns=plierRes.U.columns,
     )
 
-    for i in tqdm(ii):
+    for i in tqdm(ii, disable=disable_progress, leave=persistent_progress, position=0, desc="LV crossval"):
         iipath = plierRes.U.loc[(plierRes.U.loc[:, i] > 0), i].index
         if len(iipath) > 1:
-            for j in tqdm(iipath):
+            for j in tqdm(iipath, disable=disable_progress, leave=persistent_progress, position=0, desc=f"crossval of LV{i+1}"):
                 a = (
                     priorMat.loc[:, iipath]
                     .sum(axis=1)

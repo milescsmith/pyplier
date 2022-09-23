@@ -1,6 +1,6 @@
 import random
 from math import ceil, floor
-from typing import TypeVar
+from typing import TypeVar, Dict, Literal
 
 import numpy as np
 import pandas as pd
@@ -27,7 +27,7 @@ PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 def PLIER(
     data: pd.DataFrame,  # for anndata objects, this will need to be transposed
     priorMat: pd.DataFrame,
-    svdres: np.ndarray = None,
+    svdres: Dict[str, np.ndarray] = None,
     num_LVs: float = None,
     L1: float = None,
     L2: float = None,
@@ -46,7 +46,9 @@ def PLIER(
     seed: int = 123456,
     allGenes: bool = False,
     rseed: int = None,
-    pathwaySelection: str = "complete",
+    pathwaySelection: Literal['complete', 'fast'] = "complete",
+    persistent_progress: bool = True,
+    disable_progress: bool = False,
 ) -> PLIERRes:
     """ "Main PLIER function
 
@@ -58,7 +60,7 @@ def PLIER(
     priorMat : :class:`~pd.DataFrame`
         the binary prior information matrix with genes in rows and
         pathways/genesets in columns
-    svdres : :class:`~np.ndarray`, optional
+    svdres : dict[str, :class:`~np.ndarray`], optional
         Pre-computed result of the svd decomposition for data, by default None
     num_LVs : float, optional
         The number of latent variables to return, leave as None to be set
@@ -94,16 +96,33 @@ def PLIER(
     seed : int, optional
         Set the seed for pathway cross-validation. Defaults to 123456.
     allGenes : bool, optional
-        Use all genes. By default only genes in the priorMat matrix are used. Defaults to F.
+        Use all genes. By default only genes in the priorMat matrix are used. Defaults to False.
     rseed : int, optional
         Set this option to use a random initialization, instead of SVD. Defaults to None.
     pathwaySelection : str, optional
         Pathways to be optimized with elstic-net penalty are preselected based on ridge regression results. 'Complete' uses all top pathways to fit individual LVs. 'Fast' uses only the top pathways for the single LV in question. Defaults to "complete".
+    persistent_progress : bool
+        Should the progress bar progress be kept after completion? Defaults to True.
+    disable_progress : 
+        Should progress bars be disabled? Defaults to False.
 
     Returns
     -------
-    [type]
-        [description]
+    :class:`pyplier.PLIERResults`
+        Object containing the following:
+        - B
+        - Z
+        - U
+        - C
+        - L1
+        - L2
+        - L3
+        - heldOutGenes
+        - withPrior
+        - Uauc
+        - Up
+        - summary
+        - residual
     """
 
     if penalty_factor is None:
@@ -140,7 +159,7 @@ def PLIER(
         priorMatCV = priorMat.copy(deep=True)
         if seed is not None:
             random.seed(seed)
-        for j in tqdm(priorMatCV.columns):
+        for j in tqdm(priorMatCV.columns, disable=disable_progress, leave=persistent_progress, desc="Performing priorMat crossval"):
             iipos = priorMatCV.loc[:, j].where(lambda x: x > 0).dropna().index
             iiposs = random.sample(list(iipos), k=round(len(iipos) / 5))
             priorMatCV.loc[iiposs, j] = 0
@@ -158,7 +177,7 @@ def PLIER(
         Chat = pinv_ridge(Cp, 5) @ C.transpose()
     # compute svd and use that as the starting point
 
-    if (svdres is not None) and (svdres["v"] != Y.shape[1]):
+    if (svdres is not None) and (svdres["v"].shape[1] != Y.shape[1]):
         rprint("SVD V has the wrong number of columns")
         svdres = None
 
@@ -242,18 +261,20 @@ def PLIER(
     else:
         L3_given = False
 
-    for i in trange(max_iter):
+    for i in trange(max_iter, disable=disable_progress, leave=persistent_progress, desc="Calculating U"):
         if i >= iter_full_start:
             if i == iter_full and not L3_given:
                 # update L3 to the target fraction
                 Ulist = solveU(
-                    Z,
-                    Chat,
-                    C,
-                    penalty_factor,
-                    pathwaySelection,
-                    glm_alpha,
-                    maxPath,
+                    Z=Z,
+                    Chat=Chat,
+                    priorMat=C,
+                    penalty_factor=penalty_factor,
+                    pathwaySelection=pathwaySelection,
+                    glm_alpha=glm_alpha,
+                    maxPath=maxPath,
+                    disable_progress=disable_progress,
+                    persistent_progress=persistent_progress,
                     target_frac=frac,
                 )
                 U = Ulist["U"]
@@ -262,13 +283,15 @@ def PLIER(
                 iter_full = iter_full + iter_full_start
             else:
                 U = solveU(
-                    Z,
-                    Chat,
-                    C,
-                    penalty_factor,
-                    pathwaySelection,
-                    glm_alpha,
-                    maxPath,
+                    Z=Z,
+                    Chat=Chat,
+                    priorMat=C,
+                    penalty_factor=penalty_factor,
+                    pathwaySelection=pathwaySelection,
+                    glm_alpha=glm_alpha,
+                    maxPath=maxPath,
+                    disable_progress=disable_progress,
+                    persistent_progress=persistent_progress,
                     L3=L3,
                 )["U"]
 
@@ -337,7 +360,7 @@ def PLIER(
     )
 
     if doCrossval:
-        outAUC = crossVal(plierRes=out, priorMat=priorMat, priorMatcv=priorMatCV)
+        outAUC = crossVal(plierRes=out, priorMat=priorMat, priorMatcv=priorMatCV, disable_progress=disable_progress, persistent_progress=persistent_progress)
     else:
         rprint("Not using cross-validation. AUCs and p-values may be over-optimistic")
         outAUC = getAUC(out, Y, priorMat)

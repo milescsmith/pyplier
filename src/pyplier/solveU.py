@@ -1,6 +1,6 @@
 import warnings
 from copy import deepcopy
-from typing import Optional, TypedDict
+from typing import Optional, TypedDict, Literal
 
 import numpy as np
 import pandas as pd
@@ -18,11 +18,13 @@ def solveU(
     Chat,
     priorMat,
     penalty_factor,
-    pathwaySelection: str = "fast",
+    pathwaySelection: Literal["complete", "fast"] = "fast",
     glm_alpha: float = 0.9,
     maxPath: int = 10,
     target_frac: float = 0.7,
     L3: Optional[float] = None,
+    disable_progress: bool = False,
+    persistent_progress: bool=True
 ) -> solveUReturnDict:
     """[summary]
 
@@ -46,6 +48,10 @@ def solveU(
         The target fraction on non-zero columns of, by default 0.7
     L3 : float, optional
         Solve with a given L3, otherwise search, by default None
+    persistent_progress : bool
+        Should the progress bar progress be kept after completion? Defaults to True.
+    disable_progress : 
+        Should progress bars be disabled? Defaults to False.
 
     Returns
     -------
@@ -76,7 +82,7 @@ def solveU(
             max_features=150,
         )
 
-        for i in trange(Z.shape[1]):
+        for i in trange(Z.shape[1], disable=disable_progress, leave=persistent_progress, desc="Performing ElasticNet fit"):
             if pathwaySelection == "fast":
                 iip = np.where([Ur.iloc[:, i] <= maxPath])[1]
 
@@ -99,7 +105,7 @@ def solveU(
 
         # yeah, so this is not very pythonic, but it matches the R code
         # TODO: replace this with something like our original attempt
-        for i in trange(Z.shape[1]):
+        for i in trange(Z.shape[1], disable=disable_progress, leave=persistent_progress, desc="Storing ElasticNet fits"):
             U[results[i].iip, i] = results[i].coef_path_[:, iibest]
 
         U = pd.DataFrame(U, index=priorMat.columns, columns=Z.columns).fillna(0)

@@ -65,6 +65,8 @@ def plotTopZ(
     show_legend: bool = True,
     shuffle_pathway_pal: bool = False,
     figsize: Tuple[int] = (9, 9),
+    persistent_progress: bool = True,
+    disable_progress: bool = False,
     *args,
     **kwargs,
 ) -> ClusterGrid:
@@ -111,6 +113,10 @@ def plotTopZ(
         if a lot of LVs are being displayed
     figsize : tuple[int], default (9,9)
         Figure size for the heatmap, expressed as (width, height)
+    persistent_progress : bool
+        Should the progress bar progress be kept after completion? Defaults to True.
+    disable_progress : 
+        Should progress bars be disabled? Defaults to False.
     """
 
     # subset the original data matrix and the prior pathway matrix on the genes that were used by `PLIER`
@@ -168,7 +174,7 @@ def plotTopZ(
     toplot = data.loc[nn, :]
 
     if regress:
-        for i in tqdm(ii):
+        for i in tqdm(ii, disable=disable_progress, leave=persistent_progress, desc=f"Performing regression"):
             gi = np.where(nnindex == i)[0]
             toplot.iloc[gi, :] = (
                 sm.GLS(
@@ -236,6 +242,8 @@ def plotTopZallPath(
     index: Optional[str] = None,
     regress: bool = False,
     fdr_cutoff: float = 0.2,
+    persistent_progress: bool = True,
+    disable_progress: bool = False,
     *args,
     **kwargs,
 ) -> None:
@@ -257,6 +265,10 @@ def plotTopZallPath(
         will take longer but can be useful to see distinct patterns in highly
         correlated genes.
     fdr_cutoff : Significance cutoff for a pathway to be plotted
+    persistent_progress : bool
+        Should the progress bar progress be kept after completion? Defaults to True.
+    disable_progress : 
+        Should progress bars be disabled? Defaults to False.
     *args, **kwargs: Additional arguments to be passed to pheatmap, such as a
         column annotation data.frame
     """
@@ -298,7 +310,7 @@ def plotTopZallPath(
     ]
 
     if regress:
-        for i in tqdm(ii):
+        for i in tqdm(ii, disable=disable_progress, leave=persistent_progress, desc="Performing regression"):
             gi = np.where(nnindex == i)[0]
             toPlot.iloc[gi, :] = (
                 sm.GLS(

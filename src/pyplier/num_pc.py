@@ -1,8 +1,9 @@
 import random
 from functools import singledispatch
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, Literal
 
 import numpy as np
+import pandas as pd
 from icontract import ensure, require
 from pysmooth import smooth
 from rich import print as rprint
@@ -14,7 +15,7 @@ from sklearn.utils.extmath import randomized_svd
 @ensure(lambda result: result > 0)
 def num_pc(
     data: Union[Dict[str, np.ndarray], np.ndarray],
-    method: str = None,
+    method: Literal["elbow", "permutation"] = None,
     B: int = 20,
     seed: int = None,
 ) -> float:
@@ -87,6 +88,11 @@ def _(data: np.ndarray, **kwargs) -> Tuple[np.ndarray, str]:
     data = scaler.fit_transform(data.T)
     uu = compute_svd(data, kwargs["k"])
     return uu, kwargs["method"]
+
+
+@compute_uu.register
+def _(data: pd.DataFrame, **kwargs) -> Tuple[np.ndarray, str]:
+    return compute_uu(data.to_numpy(), **kwargs)
 
 
 @compute_uu.register

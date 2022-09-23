@@ -314,7 +314,8 @@ class PLIERResults(object):
             print(f"no such file was found at {str(loc)}")
 
     def to_markers(
-        self, priorMat: pd.DataFrame, num: int = 20, index: List[str] = None
+        self, priorMat: pd.DataFrame, num: int = 20, index: List[str] = None, persistent_progress: bool = True,
+    disable_progress: bool = False,
     ) -> pd.DataFrame:
         ii = self.U.columns[
             self.U.sum(axis=0) > 0
@@ -334,7 +335,7 @@ class PLIERResults(object):
         #   genesNotInPath <- setdiff(rownames(Zuse), genes)
         #   Zuse[genesNotInPath, i] <- 0
 
-        for i in tqdm(ii):
+        for i in tqdm(ii, disable=disable_progress, leave=persistent_progress, desc=f"Converting markers"):
             paths = self.U.index[(self.U.loc[:, i] < 0.01)].to_numpy()
             genes = priorMat[(priorMat.loc[:, paths].sum(axis=1) > 0)].index.to_numpy()
             genesNotInPath = Zuse.index[~Zuse.index.isin(genes)]

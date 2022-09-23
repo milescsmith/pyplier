@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.8.0] - 2022-09-23
+
+### Changed
+
+- Changed `svdres` argument to `PLIER` from an `np.ndarray` to a `Dict[str, np.ndarray]` to reflect what is actually
+  returned by `scipy.linalg.svd`
+- Added arguments to all functions that use tqdm to either remove the output from tqdm-based progressbars after
+  completetion or just to disable them completely.
+
+### Fixed
+
+- Added a implementation to `num_pc.compute_uu` to handle pandas dataframes (e.g. convert to a ndarray and use the
+  its implementation)
+- If a pre-computed svd is passed to PLIER, it now checks that the number of columns in the svd['v'] member matches the
+  number of columns in the data, not that the svd['v'] shape tuple matches
+
 ## [1.7.0] - 2022-09-21
 
 ### Changed
@@ -267,26 +283,32 @@ the required numpy version to be updated to >1.21 (lower version had a vulnerabi
 - Add icontract-based function input validation to some functions
 
 
-[1.5.3]: https://github.com/milescsmith/pyplier/releases/compare/1.5.2..1.5.3
-[1.5.2]: https://github.com/milescsmith/pyplier/releases/compare/1.5.1..1.5.2
-[1.5.1]: https://github.com/milescsmith/pyplier/releases/compare/1.5.0..1.5.1
-[1.5.0]: https://github.com/milescsmith/pyplier/releases/compare/1.4.0..1.5.0
-[1.4.0]: https://github.com/milescsmith/pyplier/releases/compare/1.3.0..1.4.0
-[1.3.0]: https://github.com/milescsmith/pyplier/releases/compare/1.2.0..1.3.0
-[1.2.0]: https://github.com/milescsmith/pyplier/releases/compare/1.1.1..1.2.0
-[1.1.1]: https://github.com/milescsmith/pyplier/releases/compare/1.1.0..1.1.1
-[1.1.0]: https://github.com/milescsmith/pyplier/releases/compare/1.0.1..1.1.0
-[1.0.1]: https://github.com/milescsmith/pyplier/releases/compare/1.0.0..1.0.1
-[1.0.0]: https://github.com/milescsmith/pyplier/releases/compare/0.14.0..1.0.0
-[0.14.0]: https://github.com/milescsmith/pyplier/releases/compare/0.13.1..0.14.0
-[0.13.1]: https://github.com/milescsmith/pyplier/releases/compare/0.13.0..0.13.1
-[0.13.0]: https://github.com/milescsmith/pyplier/releases/compare/0.12.0..0.13.0
-[0.12.0]: https://github.com/milescsmith/pyplier/releases/compare/0.11.0..0.12.0
-[0.11.0]: https://github.com/milescsmith/pyplier/releases/compare/0.10.0..0.11.0
-[0.10.0]: https://github.com/milescsmith/pyplier/releases/compare/0.9.0..0.10.0
-[0.9.0]: https://github.com/milescsmith/pyplier/releases/compare/0.8.0..0.9.0
-[0.8.0]: https://github.com/milescsmith/pyplier/releases/compare/0.7.0..0.8.0
-[0.7.0]: https://github.com/milescsmith/pyplier/releases/compare/0.6.2..0.7.0
-[0.6.2]: https://github.com/milescsmith/pyplier/releases/compare/0.6.1..0.6.2
-[0.6.1]: https://github.com/milescsmith/pyplier/releases/compare/0.6.0..0.6.1
-[0.6.0]: https://github.com/milescsmith/pyplier/releases/tag/0.6.0
+[1.8.0]: https://github.com/milescsmith/pyplier/compare/1.7.0..1.8.0
+[1.7.0]: https://github.com/milescsmith/pyplier/compare/1.6.0..1.7.0
+[1.6.0]: https://github.com/milescsmith/pyplier/compare/1.5.5..1.6.0
+[1.5.5]: https://github.com/milescsmith/pyplier/compare/1.5.4..1.5.5
+[1.5.4]: https://github.com/milescsmith/pyplier/compare/1.5.3..1.5.4
+[1.5.3]: https://github.com/milescsmith/pyplier/compare/1.5.2..1.5.3
+[1.5.3]: https://github.com/milescsmith/pyplier/compare/1.5.2..1.5.3
+[1.5.2]: https://github.com/milescsmith/pyplier/compare/1.5.1..1.5.2
+[1.5.1]: https://github.com/milescsmith/pyplier/compare/1.5.0..1.5.1
+[1.5.0]: https://github.com/milescsmith/pyplier/compare/1.4.0..1.5.0
+[1.4.0]: https://github.com/milescsmith/pyplier/compare/1.3.0..1.4.0
+[1.3.0]: https://github.com/milescsmith/pyplier/compare/1.2.0..1.3.0
+[1.2.0]: https://github.com/milescsmith/pyplier/compare/1.1.1..1.2.0
+[1.1.1]: https://github.com/milescsmith/pyplier/compare/1.1.0..1.1.1
+[1.1.0]: https://github.com/milescsmith/pyplier/compare/1.0.1..1.1.0
+[1.0.1]: https://github.com/milescsmith/pyplier/compare/1.0.0..1.0.1
+[1.0.0]: https://github.com/milescsmith/pyplier/compare/0.14.0..1.0.0
+[0.14.0]: https://github.com/milescsmith/pyplier/compare/0.13.1..0.14.0
+[0.13.1]: https://github.com/milescsmith/pyplier/compare/0.13.0..0.13.1
+[0.13.0]: https://github.com/milescsmith/pyplier/compare/0.12.0..0.13.0
+[0.12.0]: https://github.com/milescsmith/pyplier/compare/0.11.0..0.12.0
+[0.11.0]: https://github.com/milescsmith/pyplier/compare/0.10.0..0.11.0
+[0.10.0]: https://github.com/milescsmith/pyplier/compare/0.9.0..0.10.0
+[0.9.0]: https://github.com/milescsmith/pyplier/compare/0.8.0..0.9.0
+[0.8.0]: https://github.com/milescsmith/pyplier/compare/0.7.0..0.8.0
+[0.7.0]: https://github.com/milescsmith/pyplier/compare/0.6.2..0.7.0
+[0.6.2]: https://github.com/milescsmith/pyplier/compare/0.6.1..0.6.2
+[0.6.1]: https://github.com/milescsmith/pyplier/compare/0.6.0..0.6.1
+[0.6.0]: https://github.com/milescsmith/pyplier/tag/0.6.0
