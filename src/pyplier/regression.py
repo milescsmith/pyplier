@@ -4,16 +4,14 @@ import pandas as pd
 # from numba import jit
 from scipy.linalg import LinAlgError, svd
 
-from .utils import crossprod
+from pyplier.utils import crossprod
 
 
 def computeChat(gsMat, reg: int = 5):
     a = crossprod(gsMat)
     b = pinv_ridge(a, reg)
 
-    Chat = b @ gsMat.transpose()
-
-    return Chat
+    return b @ gsMat.transpose()
 
 
 # @jit(nopython=True)
@@ -32,24 +30,15 @@ def pinv_ridge(df: pd.DataFrame, alfa: int = 0) -> pd.DataFrame:
     """
 
     if df.shape[0] != df.shape[1]:
-        raise LinAlgError("Non-symmetric matrix")
+        msg = "Non-symmetric matrix"
+        raise LinAlgError(msg)
 
-    u, d, v = svd(
-        df
-    )  # note: compared to the R version of svd, the v matrix is returned transposed
+    u, d, v = svd(df)  # note: compared to the R version of svd, the v matrix is returned transposed
 
     if len(d) == 0:
-        return pd.DataFrame(
-            np.zeros(tuple(reversed(df.shape))), columns=df.columns, index=df.index
-        )
+        return pd.DataFrame(np.zeros(tuple(reversed(df.shape))), columns=df.columns, index=df.index)
 
-    if alfa > 0:
-        di = (np.power(d, 2) + alfa**2) / d
-    else:
-        di = d
+    di = (np.power(d, 2) + alfa**2) / d if alfa > 0 else d
     out = v.transpose() @ np.multiply(1 / di, u).transpose()
 
-    # TODO:do we really need to return a dataframe?  is an array not sufficient?
-    out_df = pd.DataFrame(out, columns=df.columns, index=df.index)
-
-    return out_df
+    return pd.DataFrame(out, columns=df.columns, index=df.index)

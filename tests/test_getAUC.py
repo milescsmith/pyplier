@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from pyplier.AUC import getAUC
-from pyplier.PLIERRes import PLIERResults
+from pyplier.plier_res import PLIERResults
 
 
 @pytest.fixture
@@ -32,14 +32,14 @@ def test_plierRes():
 
     plierRes = PLIERResults(
         residual=res_df,
-        B=b_df,
-        C=c_df,
-        U=u_df,
-        Z=z_df,
-        L1=L1,
-        L2=L2,
-        L3=L3,
-        heldOutGenes=list(),
+        b=b_df,
+        c=c_df,
+        u=u_df,
+        z=z_df,
+        l1=L1,
+        l2=L2,
+        l3=L3,
+        held_out_genes=list(),
     )
     return plierRes
 

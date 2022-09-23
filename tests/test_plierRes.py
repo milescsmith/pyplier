@@ -6,7 +6,7 @@ import pytest
 from deepdiff import DeepDiff
 from dill import load
 
-from pyplier.PLIERRes import PLIERResults
+from pyplier.plier_res import PLIERResults
 
 
 @pytest.fixture
@@ -69,20 +69,20 @@ def test_plierRes() -> PLIERResults:
 
         plierRes = PLIERResults(
             residual=pd.read_csv(resf, index_col=0),
-            B=pd.read_csv(bf, index_col=0),
-            Z=pd.read_csv(zf, index_col=0),
-            U=pd.read_csv(uf, index_col=0),
-            C=pd.read_csv(cf, index_col=0),
-            L1=L1,
-            L2=L2,
-            L3=L3,
-            heldOutGenes={
+            b=pd.read_csv(bf, index_col=0),
+            z=pd.read_csv(zf, index_col=0),
+            u=pd.read_csv(uf, index_col=0),
+            c=pd.read_csv(cf, index_col=0),
+            l1=L1,
+            l2=L2,
+            l3=L3,
+            held_out_genes={
                 k: g["value"].tolist()
                 for k, g in pd.read_csv(hogf, index_col=0).groupby("name")
             },
-            withPrior=withPrior,
-            Uauc=pd.read_csv(uacf, index_col=0),
-            Up=pd.read_csv(upf, index_col=0),
+            with_prior=withPrior,
+            uauc=pd.read_csv(uacf, index_col=0),
+            up=pd.read_csv(upf, index_col=0),
             summary=pd.read_csv(sf, index_col=0),
         )
         return plierRes

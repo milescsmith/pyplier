@@ -1,7 +1,8 @@
-from typing import List, Optional, Tuple, TypeVar
+from typing import TypeVar
 
 import matplotlib.colors as mcolors
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
@@ -9,8 +10,8 @@ from matplotlib.patches import Patch
 from tqdm.auto import tqdm
 from typeguard import typechecked
 
-from .PLIERRes import PLIERResults
-from .utils import zscore
+from pyplier.plier_res import PLIERResults
+from pyplier.utils import zscore
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 ClusterGrid = TypeVar("ClusterGrid", bound="sns.matrix.ClusterGrid")
@@ -20,11 +21,11 @@ ClusterGrid = TypeVar("ClusterGrid", bound="sns.matrix.ClusterGrid")
 def plotMat(
     mat: pd.DataFrame,
     scale: bool = True,
-    trim_names: Optional[int] = 50,
-    cutoff: Optional[float] = None,
+    trim_names: int = 50,
+    cutoff: float | None = None,
     *args,
     **kwargs,
-) -> dict[str, np.ndarray]:
+) -> dict[str, npt.arraylike]:
     if trim_names is not None:
         mat.index = mat.index.str.slice(stop=trim_names)
         mat.columns = mat.columns.str.slice(stop=trim_names)
@@ -49,14 +50,14 @@ def plotMat(
 def plotTopZ(
     plierRes: PLIERRes,
     data: pd.DataFrame,
-    priorMat: pd.DataFrame,
+    prior_mat: pd.DataFrame,
     top: int = 10,
-    index: Optional[List[str]] = None,
+    index: list[str] | None = None,
     regress: bool = False,
     allLVs: bool = False,
     colormap: str = "viridis",
     annotation_row_palette: str = "hls",
-    scale: Optional[int] = None,
+    scale: int | None = None,
     cluster_cols: bool = True,
     show_col_dendrogram: bool = False,
     cluster_rows: bool = False,
@@ -64,7 +65,9 @@ def plotTopZ(
     show_cbar: bool = False,
     show_legend: bool = True,
     shuffle_pathway_pal: bool = False,
-    figsize: Tuple[int] = (9, 9),
+    figsize: tuple[int] = (9, 9),
+    persistent_progress: bool = True,
+    disable_progress: bool = False,
     *args,
     **kwargs,
 ) -> ClusterGrid:
@@ -111,43 +114,40 @@ def plotTopZ(
         if a lot of LVs are being displayed
     figsize : tuple[int], default (9,9)
         Figure size for the heatmap, expressed as (width, height)
+    persistent_progress : bool
+        Should the progress bar progress be kept after completion? Defaults to True.
+    disable_progress :
+        Should progress bars be disabled? Defaults to False.
     """
 
     # subset the original data matrix and the prior pathway matrix on the genes that were used by `PLIER`
-    data = data.loc[plierRes.Z.index, :]
-    priorMat = priorMat.loc[plierRes.Z.index.intersection(priorMat.index), :]
-    plierRes.U.columns[np.where(plierRes.U.sum(axis=0) > 0)]
+    data = data.loc[plierRes.z.index, :]
+    prior_mat = prior_mat.loc[plierRes.z.index.intersection(prior_mat.index), :]
+    plierRes.u.columns[np.where(plierRes.u.sum(axis=0) > 0)]
 
     if allLVs:
         if index is not None:
-            ii = plierRes.U.columns.intersection(
+            ii = plierRes.u.columns.intersection(
                 index
             )  # use `intersection` so we don't have an issue with trying to plot non-existent LVs
         else:
-            ii = plierRes.U.columns
+            ii = plierRes.u.columns
     elif index is not None:
-        ii = plierRes.U.columns[plierRes.U.sum() > 0].intersection(index)
+        ii = plierRes.u.columns[plierRes.u.sum() > 0].intersection(index)
     else:
-        ii = plierRes.U.columns[plierRes.U.sum() > 0]
+        ii = plierRes.u.columns[plierRes.u.sum() > 0]
 
-    z_ranks = plierRes.Z.loc[:, ii].rank(ascending=False)
+    z_ranks = plierRes.z.loc[:, ii].rank(ascending=False)
     nnz_ranks = [z_ranks[i].index[[z_ranks[i] <= top]].values for i in ii]
 
     nn = np.concatenate(nnz_ranks)
 
-    nncol = (
-        plierRes.B.index[plierRes.Z.columns.isin(ii)]
-        .repeat([len(_) for _ in nnz_ranks])
-        .to_series()
-    )
+    nncol = plierRes.b.index[plierRes.z.columns.isin(ii)].repeat([len(_) for _ in nnz_ranks]).to_series()
 
     nnpath = pd.concat(
         [
-            priorMat.loc[x, plierRes.U.loc[plierRes.U.loc[:, y] > 0, y].index].sum(
-                axis=1
-            )
-            > 0
-            for x, y in zip(nnz_ranks, ii)
+            prior_mat.loc[x, plierRes.u.loc[plierRes.u.loc[:, y] > 0, y].index].sum(axis=1) > 0
+            for x, y in zip(nnz_ranks, ii, strict=False)
         ],
         axis=0,
     )
@@ -168,12 +168,12 @@ def plotTopZ(
     toplot = data.loc[nn, :]
 
     if regress:
-        for i in tqdm(ii):
+        for i in tqdm(ii, disable=disable_progress, leave=persistent_progress, desc="Performing regression"):
             gi = np.where(nnindex == i)[0]
             toplot.iloc[gi, :] = (
                 sm.GLS(
                     toplot.iloc[gi, :].T,
-                    plierRes.B.drop(index=plierRes.B.index[0]).loc[:, toplot.columns].T,
+                    plierRes.b.drop(index=plierRes.b.index[0]).loc[:, toplot.columns].T,
                 )
                 .fit()
                 .resid.T
@@ -184,12 +184,10 @@ def plotTopZ(
         "notInPathway": mcolors.to_rgb(mcolors.CSS4_COLORS["beige"]),
     }
 
-    pathway_pal = sns.color_palette(
-        annotation_row_palette, n_colors=nncol.unique().size
-    )
+    pathway_pal = sns.color_palette(annotation_row_palette, n_colors=nncol.unique().size)
     if shuffle_pathway_pal:
         np.random.shuffle(pathway_pal)
-    pathway_lut = {x: y for x, y in zip(nncol.unique(), pathway_pal)}
+    pathway_lut = dict(zip(nncol.unique(), pathway_pal, strict=False))
 
     row_annotations = pd.DataFrame(
         {
@@ -233,9 +231,11 @@ def plotTopZallPath(
     data: pd.DataFrame,
     priorMat: pd.DataFrame,
     top: int = 10,
-    index: Optional[str] = None,
+    index: str | None = None,
     regress: bool = False,
     fdr_cutoff: float = 0.2,
+    persistent_progress: bool = True,
+    disable_progress: bool = False,
     *args,
     **kwargs,
 ) -> None:
@@ -257,59 +257,57 @@ def plotTopZallPath(
         will take longer but can be useful to see distinct patterns in highly
         correlated genes.
     fdr_cutoff : Significance cutoff for a pathway to be plotted
+    persistent_progress : bool
+        Should the progress bar progress be kept after completion? Defaults to True.
+    disable_progress :
+        Should progress bars be disabled? Defaults to False.
     *args, **kwargs: Additional arguments to be passed to pheatmap, such as a
         column annotation data.frame
     """
-    pval_cutoff = plierRes.summary.loc[
-        plierRes.summary["FDR"] < fdr_cutoff, "p-value"
-    ].max()
+    pval_cutoff = plierRes.summary.loc[plierRes.summary["FDR"] < fdr_cutoff, "p-value"].max()
 
-    ii = (plierRes.U.sum(axis=0) > 0).index
+    ii = (plierRes.u.sum(axis=0) > 0).index
     if index is not None:
         ii = ii.intersection(index)
 
-    z_ranks = plierRes.Z.loc[:, ii].rank(axis=0, ascending=False)
-    Ustrict = plierRes.U.copy()
-    Ustrict[plierRes.Up > pval_cutoff] = 0
-    pathsUsed = Ustrict[Ustrict.loc[:, ii].sum(axis=1) > 0].index
-    pathMat = np.zeros((0, len(pathsUsed)))
+    z_ranks = plierRes.z.loc[:, ii].rank(axis=0, ascending=False)
+    ustrict = plierRes.u.copy()
+    ustrict[plierRes.up > pval_cutoff] = 0
+    paths_used = ustrict[ustrict.loc[:, ii].sum(axis=1) > 0].index
+    path_mat = np.zeros((0, len(paths_used)))
 
     nntmp = {i: z_ranks.index[np.where(z_ranks[i] <= top)[0]].values for i in ii}
     nn = np.concatenate(list(nntmp.values()))
     nncol = {
-        i: plierRes.U.index[plierRes.U.loc[:, i] == plierRes.U.loc[:, i].max()].repeat(
-            len(nntmp[i])
-        )
-        if plierRes.U.loc[:, i].max() > 0
+        i: plierRes.u.index[plierRes.u.loc[:, i] == plierRes.u.loc[:, i].max()].repeat(len(nntmp[i]))
+        if plierRes.u.loc[:, i].max() > 0
         else pd.Index([i]).repeat(len(nntmp[i]))
         for i in ii
     }
     nnindex = np.concatenate([list(_) for _ in nncol.values()])
-    pathMat = priorMat.loc[np.concatenate(list(nntmp.values())), pathsUsed]
+    path_mat = priorMat.loc[np.concatenate(list(nntmp.values())), paths_used]
 
-    if any(pathMat.sum() > 1):
-        pathMat.loc[:, pathMat.sum() > 0]
-        pathsUsed = pathMat.columns
+    if any(path_mat.sum() > 1):
+        path_mat.loc[:, path_mat.sum() > 0]
+        paths_used = path_mat.columns
 
-    pathMat = pathMat.astype("category")
-
-    toPlot = data.loc[
-        nn,
-    ]
+    path_mat = path_mat.astype("category")
 
     if regress:
-        for i in tqdm(ii):
+        to_plot = data.loc[nn,]
+
+        for i in tqdm(ii, disable=disable_progress, leave=persistent_progress, desc="Performing regression"):
             gi = np.where(nnindex == i)[0]
-            toPlot.iloc[gi, :] = (
+            to_plot.iloc[gi, :] = (
                 sm.GLS(
-                    toPlot.iloc[gi, :].T,
-                    plierRes.B.drop(index=plierRes.B.index[0]).loc[:, toPlot.columns].T,
+                    to_plot.iloc[gi, :].T,
+                    plierRes.b.drop(index=plierRes.b.index[0]).loc[:, to_plot.columns].T,
                 )
                 .fit()
                 .resid.T
             )
 
-    annotation_row = pathMat.replace(
+    annotation_row = path_mat.replace(
         {
             0: mcolors.to_rgb(mcolors.CSS4_COLORS["beige"]),
             1: mcolors.to_rgb(mcolors.CSS4_COLORS["black"]),
@@ -323,8 +321,8 @@ def plotU(
     plierRes: PLIERRes,
     auc_cutoff: float = 0.6,
     fdr_cutoff: float = 0.05,
-    indexCol: Optional[List[str]] = None,
-    indexRow: Optional[List[str]] = None,
+    index_col: list[str] | None = None,
+    index_row: list[str] | None = None,
     top: int = 3,
     sort_row: bool = False,
     *args,
@@ -344,36 +342,31 @@ def plotU(
     sort_row : do not cluster the matrix but instead sort it to display the positive values close to the diagonal
     *args, **kwargs : options to be passed to :class:seaborn.heatmap
     """
-    if indexCol is None:
-        indexCol = plierRes.U.columns
+    if index_col is None:
+        index_col = plierRes.u.columns
 
-    if indexRow is None:
-        indexRow = plierRes.U.index
+    if index_row is None:
+        index_row = plierRes.u.index
 
-    U = plierRes.U.copy()
-    pval_cutoff = plierRes.summary.loc[
-        plierRes.summary["FDR"] < fdr_cutoff, "p-value"
-    ].max()
-    U[plierRes.Uauc < auc_cutoff] = 0
-    U[plierRes.Up > pval_cutoff] = 0
+    u = plierRes.u.copy()
+    pval_cutoff = plierRes.summary.loc[plierRes.summary["FDR"] < fdr_cutoff, "p-value"].max()
+    u[plierRes.uauc < auc_cutoff] = 0
+    u[plierRes.up > pval_cutoff] = 0
 
-    U = U.loc[indexRow, indexCol].apply(replace_below_top, n=top, replace_val=0)
+    u = u.loc[index_row, index_col].apply(replace_below_top, n=top, replace_val=0)
 
     if sort_row:
-        Um = pd.DataFrame(
-            {
-                x: np.multiply((U.columns.get_loc(x) + 1) * 100, np.sign(y))
-                for x, y in U.iteritems()
-            }
-        ).max(axis=1)
+        um = pd.DataFrame({x: np.multiply((u.columns.get_loc(x) + 1) * 100, np.sign(y)) for x, y in u.iteritems()}).max(
+            axis=1
+        )
         plotMat(
-            U.loc[Um.rank(ascending=False).sort_values().index],
+            u.loc[um.rank(ascending=False).sort_values().index],
             row_cluster=False,
             *args,
             **kwargs,
         )
     else:
-        plotMat(U, *args, **kwargs)
+        plotMat(u, *args, **kwargs)
 
 
 def replace_below_top(sr: pd.Series, n: int = 3, replace_val: int = 0) -> pd.Series:

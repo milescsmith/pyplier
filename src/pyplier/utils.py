@@ -1,6 +1,7 @@
-from typing import Any, Optional, Union
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 # from numba import jit
@@ -8,29 +9,21 @@ import pandas as pd
 
 # @jit(nopython=True)
 def crossprod(
-    mat1: Union[np.array, pd.DataFrame],
-    mat2: Optional[Union[np.array, pd.DataFrame]] = None,
-) -> Union[np.array, pd.DataFrame]:
-
-    if mat2 is None:
-        return mat1.transpose() @ mat1
-    else:
-        return mat1.transpose() @ mat2
+    mat1: npt.arraylike | pd.DataFrame,
+    mat2: npt.arraylike | pd.DataFrame | None = None,
+) -> npt.arraylike | pd.DataFrame:
+    return mat1.transpose() @ mat1 if mat2 is None else mat1.transpose() @ mat2
 
 
 # @jit(nopython=True)
 def tcrossprod(
-    mat1: Union[np.array, pd.DataFrame],
-    mat2: Optional[Union[np.array, pd.DataFrame]] = None,
-) -> Union[np.array, pd.DataFrame]:
-
-    if mat2 is None:
-        return mat1 @ mat1.transpose()
-    else:
-        return mat1 @ mat2.transpose()
+    mat1: npt.arraylike | pd.DataFrame,
+    mat2: npt.arraylike | pd.DataFrame | None = None,
+) -> npt.arraylike | pd.DataFrame:
+    return mat1 @ mat1.transpose() if mat2 is None else mat1 @ mat2.transpose()
 
 
-def zscore(arr: Union[pd.Series, np.ndarray]) -> Union[pd.Series, np.ndarray]:
+def zscore(arr: pd.Series | npt.arraylike) -> pd.Series | npt.arraylike:
     if np.std(arr, ddof=1) == 0.0:
         return np.zeros(len(arr))
     else:
@@ -42,14 +35,7 @@ def setdiff(list1: list[Any], list2: list[Any]) -> list[Any]:
 
 
 def copyMat(df: pd.DataFrame, zero: bool = False) -> pd.DataFrame:
-    if zero:
-        dfnew = pd.DataFrame(
-            np.zeros(shape=df.shape), index=df.index, columns=df.columns
-        )
-    else:
-        dfnew = df.copy(deep=True)
-
-    return dfnew
+    return pd.DataFrame(np.zeros(shape=df.shape), index=df.index, columns=df.columns) if zero else df.copy(deep=True)
 
 
 def getCutoff(aucRes: dict[str, pd.DataFrame], fdr_cutoff: float = 0.01) -> float:

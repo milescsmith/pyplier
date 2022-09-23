@@ -5,7 +5,7 @@ from json import load
 import pandas as pd
 import pytest
 
-from pyplier.AUC import AUC
+from pyplier.auc import AUC
 
 
 @pytest.fixture

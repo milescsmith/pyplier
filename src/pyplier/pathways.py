@@ -27,8 +27,10 @@ def pathwayFromGMT(gmt_file: Path) -> pd.DataFrame:
         .explode(column="genes")
         .assign(genes=lambda x: x["genes"].str.strip(), count=1)
     )
-    gmt_wide = pd.pivot_table(
-        gmt_long, values="count", index="genes", columns="pathway", fill_value=0
+    return pd.pivot_table(
+        gmt_long,
+        values="count",
+        index="genes",
+        columns="pathway",
+        fill_value=0,
     ).rename_axis(columns=None)
-
-    return gmt_wide

@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from pytest import approx
 
-from pyplier.solveU import solveU
+from pyplier.solve_u import solveU
 
 
 @pytest.fixture
@@ -68,25 +68,25 @@ def test_solveU(
     expected_U_fast,
 ):
     U_complete = solveU(
-        Z=test_Z,
-        Chat=test_Chat,
+        z=test_Z,
+        chat=test_Chat,
         priorMat=test_priorMat,
         penalty_factor=test_penalty_factor,
-        pathwaySelection="complete",
+        pathway_selection="complete",
         glm_alpha=0.9,
-        maxPath=10,
+        max_path=10,
         target_frac=0.7,
         L3=None,
     )
 
     U_fast = solveU(
-        Z=test_Z,
-        Chat=test_Chat,
+        z=test_Z,
+        chat=test_Chat,
         priorMat=test_priorMat,
         penalty_factor=test_penalty_factor,
-        pathwaySelection="fast",
+        pathway_selection="fast",
         glm_alpha=0.9,
-        maxPath=10,
+        max_path=10,
         target_frac=0.7,
         L3=None,
     )

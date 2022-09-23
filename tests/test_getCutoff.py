@@ -3,7 +3,7 @@ import importlib.resources as ir
 import pandas as pd
 import pytest
 
-from pyplier.PLIERRes import PLIERResults
+# from pyplier.plier_res import PLIERResults
 from pyplier.utils import getCutoff
 
 

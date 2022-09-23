@@ -1,8 +1,10 @@
 import random
 from functools import singledispatch
-from typing import Dict, Tuple, Union
+from typing import Literal
 
 import numpy as np
+import numpy.typing as npt
+import pandas as pd
 from icontract import ensure, require
 from pysmooth import smooth
 from rich import print as rprint
@@ -10,44 +12,39 @@ from scipy.linalg import svd
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.extmath import randomized_svd
 
+LARGE_NUMBER_OF_COLUMNS = 500
+MIN_NUM_DIMENSIONS = 2
+
 
 @ensure(lambda result: result > 0)
 def num_pc(
-    data: Union[Dict[str, np.ndarray], np.ndarray],
-    method: str = None,
+    data: dict[str, npt.arraylike] | npt.arraylike,
+    method: Literal["elbow", "permutation"] | None = None,
     B: int = 20,
-    seed: int = None,
+    seed: int | None = None,
 ) -> float:
-
     if method is None:
         method = "elbow"
     if method not in ("elbow", "permutation"):
-        raise RuntimeError(
-            f"method must be either 'elbow' or 'permutation', but \
-                           {method} was passed"
-        )
+        msg = f"method must be either 'elbow' or 'permutation', but {method} was passed"
+        raise RuntimeError(msg)
 
     if seed is not None:
         random.seed(seed)
     if not isinstance(data, dict):
         n = data.shape[1]  # nrows
-        if n < 500:
-            k = n
-        else:
-            k = int(max(200, n / 4))
+        k = n if n < LARGE_NUMBER_OF_COLUMNS else int(max(200, n / 4))
     else:
         k = None
 
     uu, method = compute_uu(data, method=method, k=k)
 
-    if (
-        method == "permutation"
-    ):  # not sure why this option is present in PLIER as it is not used
+    if method == "permutation":  # not sure why this option is present in PLIER as it is not used
         rprint(
             "[red bold]WARNING!:[/red bold] using the 'permutation' method yields unreliable results.  This is only kept for compatibility with the R version of {PLIER}"
         )
         # nn = min(c(n, m))
-        dstat = uu[0:k] ** 2 / sum(uu[0:k] ** 2)
+        dstat = uu[:k] ** 2 / sum(uu[:k] ** 2)
         dstat0 = np.zeros(shape=(B, k))
         rng = np.random.default_rng()
         dat0 = np.copy(data)
@@ -59,7 +56,7 @@ def num_pc(
             else:
                 _, uu0, _ = randomized_svd(M=dat0, n_components=k, n_iter=3)
 
-            dstat0[i, :] = uu0[0:k] ** 2 / sum(uu0[0:k] ** 2)
+            dstat0[i, :] = uu0[:k] ** 2 / sum(uu0[:k] ** 2)
 
         psv = np.ones(k)
         for i in range(k):
@@ -81,7 +78,7 @@ def compute_uu(data, **kwargs):
 
 
 @compute_uu.register
-def _(data: np.ndarray, **kwargs) -> Tuple[np.ndarray, str]:
+def _(data: np.ndarray, **kwargs) -> tuple[np.ndarray, str]:
     rprint("Computing svd")
     scaler = StandardScaler()
     data = scaler.fit_transform(data.T)
@@ -90,12 +87,15 @@ def _(data: np.ndarray, **kwargs) -> Tuple[np.ndarray, str]:
 
 
 @compute_uu.register
-def _(data: dict, **kwargs) -> Tuple[np.ndarray, str]:
+def _(data: pd.DataFrame, **kwargs) -> tuple[np.ndarray, str]:
+    return compute_uu(data.to_numpy(), **kwargs)
+
+
+@compute_uu.register
+def _(data: dict, **kwargs) -> tuple[np.ndarray, str]:
     if data["d"] is not None:
         if kwargs["method"] == "permutation":
-            rprint(
-                "Original data is needed for permutation method.\nSetting method to elbow"
-            )
+            rprint("Original data is needed for permutation method.\nSetting method to elbow")
             method = "elbow"
         else:
             method = kwargs["method"]
@@ -113,12 +113,12 @@ def elbow(uu: np.ndarray) -> int:
     return int((np.argwhere(x <= np.quantile(x, 0.5)))[1]) + 1
 
 
-@require(lambda data: data.ndim >= 2)
+@require(lambda data: data.ndim >= MIN_NUM_DIMENSIONS)
 def compute_svd(data: np.ndarray, k: int) -> np.ndarray:
     n = data.shape[1]  # nrows
-    if n < 500:
+    if n < LARGE_NUMBER_OF_COLUMNS:
         uu = svd(data.transpose(), compute_uv=False)
-        return uu
     else:
         _, uu, _ = randomized_svd(M=data, n_components=k, n_iter=3, random_state=803)
-        return uu
+
+    return uu

@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from hypothesis import assume, given, settings
 
-from pyplier.AUC import mannwhitneyu_conf_int
+from pyplier.auc import mannwhitneyu_conf_int
 
 
 # cheat here a bit to speed things up.

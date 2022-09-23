@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from pyplier import combinePaths, PLIER
+from pyplier import PLIER, combinePaths
 
 common_data_dir = Path("/home/milo/workspace/pyplier")
 
