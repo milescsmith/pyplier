@@ -41,7 +41,7 @@ importlib-resources = { version = "^5.4.0", python = "~3.8" }
 icontract-hypothesis = "^1.1.7"
 matplotlib = "^3.5.1"
 dill = "^0.3.4"
-deepdiff = "^5.8.1"
+deepdiff = "^6.0.0"
 bandit = "^1.7.4"
 pytest-cov = "^3.0.0"
 vprof = "^0.38"
