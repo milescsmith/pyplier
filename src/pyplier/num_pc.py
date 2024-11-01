@@ -18,7 +18,7 @@ MIN_NUM_DIMENSIONS = 2
 
 @ensure(lambda result: result > 0)
 def num_pc(
-    data: dict[str, npt.arraylike] | npt.arraylike,
+    data: dict[str, npt.NDArray] | npt.NDArray,
     method: Literal["elbow", "permutation"] | None = None,
     B: int = 20,
     seed: int | None = None,

@@ -9,14 +9,14 @@ from tqdm.auto import trange
 
 
 class SolveUReturnDict(TypedDict):
-    U: pd.DataFrame
+    u: pd.DataFrame
     l3: float
 
 
-def solveU(
+def solve_u(
     z,
     chat,
-    priorMat,
+    prior_mat,
     penalty_factor,
     pathway_selection: Literal["complete", "fast"] = "fast",
     glm_alpha: float = 0.9,
@@ -30,14 +30,14 @@ def solveU(
 
     Parameters
     ----------
-    Z : [type]
+    z : [type]
         current Z estimate
-    Chat : [type]
+    chat : [type]
         the inverse of the C matrix
-    priorMat : [type]
+    prior_mat : [type]
         the prior pathway or C matrix
     penalty_factor : [type]
-        Penalties for different pathways, must have size priorMat.shape[1].
+        Penalties for different pathways, must have size prior_mat.shape[1].
     pathwaySelection : str, optional
         Method to use for pathway selection., by default "fast"
     glm_alpha : float, optional
@@ -68,7 +68,7 @@ def solveU(
     results = {}
 
     if l3 is None:
-        u = np.zeros(shape=(priorMat.shape[1], z.shape[1]))
+        u = np.zeros(shape=(prior_mat.shape[1], z.shape[1]))
 
         lambdas = np.exp(np.arange(start=-4, stop=-12.125, step=-0.125))
         results = {}
@@ -92,7 +92,7 @@ def solveU(
                 warnings.simplefilter("ignore")
                 gres.fit(
                     y=z.iloc[:, i],
-                    X=priorMat.iloc[:, iip],
+                    X=prior_mat.iloc[:, iip],
                     relative_penalties=penalty_factor[iip],
                 )
 
@@ -110,7 +110,7 @@ def solveU(
         ):
             u[results[i].iip, i] = results[i].coef_path_[:, iibest]
 
-        u = pd.DataFrame(u, index=priorMat.columns, columns=z.columns).fillna(0)
+        u = pd.DataFrame(u, index=prior_mat.columns, columns=z.columns).fillna(0)
         l3 = lambdas[iibest]
     else:
         # do one fit with a given lambda
@@ -133,11 +133,11 @@ def solveU(
                 # try:
                 gres.fit(
                     y=z.iloc[:, i],
-                    X=priorMat.iloc[:, iip],
+                    X=prior_mat.iloc[:, iip],
                     relative_penalties=penalty_factor[iip],
                 )
             results[i] = pd.Series(data=gres.coef_path_[:, 1], index=ur.index[iip])
 
-        u = pd.DataFrame(results, index=priorMat.columns).fillna(0)
+        u = pd.DataFrame(results, index=prior_mat.columns).fillna(0)
 
-    return SolveUReturnDict(U=u, l3=l3)
+    return SolveUReturnDict(u=u, l3=l3)

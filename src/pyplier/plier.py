@@ -12,13 +12,13 @@ from scipy.linalg import solve, svd
 from sklearn.utils.extmath import randomized_svd
 from tqdm.auto import tqdm, trange
 
-from pyplier.auc import getAUC
+from pyplier.auc import get_auc
 from pyplier.cross_val import crossVal
-from pyplier.name_b import nameB
+from pyplier.name_b import name_b
 from pyplier.num_pc import num_pc
 from pyplier.plier_res import PLIERResults
 from pyplier.regression import pinv_ridge
-from pyplier.solve_u import solveU
+from pyplier.solve_u import solve_u
 from pyplier.utils import crossprod, setdiff, tcrossprod, zscore
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
@@ -33,7 +33,7 @@ LARGE_NUMBER_OF_COLUMNS = 500
 def PLIER(
     data: pd.DataFrame,  # for anndata objects, this will need to be transposed
     prior_mat: pd.DataFrame,
-    svdres: dict[str, npt.arraylike] | None = None,
+    svdres: dict[str, npt.NDArray] | None = None,
     num_lvs: float | None = None,
     l1: float | None = None,
     l2: float | None = None,
@@ -42,10 +42,10 @@ def PLIER(
     max_iter: int = 350,
     trace: bool = False,
     scale: bool = True,
-    chat: npt.arraylike | None = None,
+    chat: npt.NDArray | None = None,
     max_path: int = 10,
     doCrossval: bool = True,
-    penalty_factor: npt.arraylike | None = None,
+    penalty_factor: npt.NDArray | None = None,
     glm_alpha: float = 0.9,
     min_genes: int = 10,
     tol: float = 1e-06,
@@ -66,7 +66,7 @@ def PLIER(
     priorMat : :class:`~pd.DataFrame`
         the binary prior information matrix with genes in rows and
         pathways/genesets in columns
-    svdres : dict[str, :class:`~npt.arraylike`], optional
+    svdres : dict[str, :class:`~npt.NDArray`], optional
         Pre-computed result of the svd decomposition for data, by default None
     num_LVs : float, optional
         The number of latent variables to return, leave as None to be set
@@ -85,13 +85,13 @@ def PLIER(
         Display progress information, by default False
     scale : bool, optional
         Z-score the data before processing, by default True
-    Chat : :class:`~npt.arraylike`, optional
+    Chat : :class:`~npt.NDArray`, optional
         A ridge inverse of priorMat, used to select active pathways, expensive to compute so can be precomputed when running PLIER multiple times. Defaults to None.
     maxPath : int, optional
         The maximum number of active pathways per latent variable. Defaults to 10.
     doCrossval : bool, optional
         Whether or not to do real cross-validation with held-out pathway genes. Alternatively, all gene annotations are used and only pseudo-crossvalidation is done. The latter option may be preferable if some pathways of interest have few genes. Defaults to True.
-    penalty_factor : npt.arraylike, optional
+    penalty_factor : npt.NDArray, optional
         A vector equal to the number of columns in priorMat. Sets relative penalties for different pathway/geneset subsets. Lower penalties will make a pathway more likely to be used. Only the relative values matter. Internally rescaled. Defaults to None.
     glm_alpha : float, optional
         Set the alpha for elastic-net. Defaults to 0.9.
@@ -264,10 +264,10 @@ def PLIER(
         if i >= iter_full_start:
             if i == iter_full and not l3_given:
                 # update L3 to the target fraction
-                u_list = solveU(
+                u_list = solve_u(
                     z=z,
                     chat=chat,
-                    priorMat=c,
+                    prior_mat=c,
                     penalty_factor=penalty_factor,
                     pathway_selection=pathway_selection,
                     glm_alpha=glm_alpha,
@@ -281,10 +281,10 @@ def PLIER(
                 rprint(f"New L3 is {l3}")
                 iter_full = iter_full + iter_full_start
             else:
-                u = solveU(
+                u = solve_u(
                     z=z,
                     chat=chat,
-                    priorMat=c,
+                    prior_mat=c,
                     penalty_factor=penalty_factor,
                     pathway_selection=pathway_selection,
                     glm_alpha=glm_alpha,
@@ -364,7 +364,7 @@ def PLIER(
         )
     else:
         rprint("Not using cross-validation. AUCs and p-values may be over-optimistic")
-        out_auc = getAUC(out, y, prior_mat)
+        out_auc = get_auc(out, y, prior_mat)
 
     out.with_prior = u.sum(axis="index")[u.sum(axis="index") > 0].to_dict()
     out.uauc = out_auc["Uauc"]
@@ -373,6 +373,6 @@ def PLIER(
     tt = out.uauc.max(axis="index")
     rprint(f"There are {sum(tt > AUC_CUTOFF)} LVs with AUC > 0.70")
 
-    out.b.index = nameB(out)
+    out.b.index = name_b(out)
 
     return out

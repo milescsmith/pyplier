@@ -1,85 +1,70 @@
-import tempfile
-from typing import Any
+import os
+import sys
+from pathlib import Path
 
 import nox
-from nox.sessions import Session
-from nox_poetry import session
 
-package = "pyplier"
-nox.options.sessions = ["black", "isort", "tests"]  # "mypy", "pytype", "lint",
+PACKAGE = "revseq"
+PYTHON_VERSIONS = ["3.10", "3.11"]
+os.environ["PDM_IGNORE_SAVED_PYTHON"] = "1"
+os.environ["PDM_IGNORE_ACTIVE_VENV"] = "0"
+nox.needs_version = ">=2024.4.15"
+nox.options.sessions = (
+    "mypy",
+    "tests",
+)
+
 locations = (
     "src",
-    "tests",
-)  # "noxfile.py", #"docs/conf.py"
-test_locations = (
     "tests",
 )
 
 
-def install_with_constraints(session: Session, *args: str, **kwargs: Any) -> None:
-    """Install packages constrained by Poetry's lock file.
-    This function is a wrapper for nox.sessions.Session.install. It
-    invokes pip to install packages inside of the session's virtualenv.
-    Additionally, pip is passed a constraints file generated from
-    Poetry's lock file, to ensure that the packages are pinned to the
-    versions specified in poetry.lock. This allows you to manage the
-    packages as Poetry development dependencies.
-    Arguments:
-        session: The Session object.
-        args: Command-line arguments for pip.
-        kwargs: Additional keyword arguments for Session.install.
-    """
-    with tempfile.NamedTemporaryFile() as requirements:
-        session.run(
-            "poetry",
-            "export",
-            "--dev",
-            "--format=requirements.txt",
-            f"--output={requirements.name}",
-            external=True,
-        )
-        session.install(f"--constraint={requirements.name}", *args, **kwargs)
-
-
-@session(python=["3.9"])
-def tests(session: Session) -> None:
-    args = session.posargs or test_locations
-
-    session.install("numpy")
-    session.run_always("poetry", "install", external=True)
-    session.install("pytest")
-    session.install("hypothesis")
-    session.run("pytest", *args)
-
-
-@session(python=["3.9"])
-def black(session: Session) -> None:
-    """Run black code formatter."""
+@nox.session
+def lint(session: nox.session) -> None:
+    """Lint using ruff."""
     args = session.posargs or locations
-    session.install("black[jupyter]")
-    session.run("black", *args)
+    session.install("ruff")
+    session.run("ruff", *args)
 
 
-@session(python=["3.9"])
-def isort(session: Session) -> None:
-    """Run black code formatter."""
-    args = session.posargs or locations
-    session.install("isort")
-    session.run("isort", *args)
-
-
-@session(python=["3.9"])
-def lint(session: Session) -> None:
-    """Lint using flake8."""
-    args = session.posargs or locations
-    session.install(
-        "flake8",
-        "flake8-annotations",
-        "flake8-bandit",
-        "flake8-black",
-        "flake8-bugbear",
-        "flake8-docstrings",
-        "flake8-import-order",
-        "darglint",
+@nox.session(python="3.10")
+def mypy(session: nox.Session) -> None:
+    """Type-check using mypy."""
+    session.run_always("pdm", "install", "--no-self", "--no-default", "--dev", external=True)
+    session.run(
+        "mypy",
+        "--install-types",
+        "--non-interactive",
+        f"--python-executable={sys.executable}",
+        "noxfile.py",
+        external=True,
     )
-    session.run("flake8", *args)
+
+
+@nox.session(python=PYTHON_VERSIONS)
+def lockfile(session: nox.Session) -> None:
+    """Run the test suite."""
+    session.run_always("pdm", "lock", external=True)
+
+
+@nox.session(python=PYTHON_VERSIONS)
+def tests(session: nox.Session) -> None:
+    """Run the test suite."""
+    session.run_always("pdm", "install", "--fail-fast", "--frozen-lockfile", "--dev", external=True)
+    session.run(
+        "coverage", "run", "--parallel", "-m", "pytest", "--numprocesses", "auto", "--random-order", external=True
+    )
+
+
+@nox.session(python=PYTHON_VERSIONS)
+def coverage(session: nox.Session) -> None:
+    """Produce the coverage report."""
+    args = session.posargs or ["report"]
+    session.install("coverage[toml]", "codecov", external=True)
+
+    if not session.posargs and any(Path().glob(".coverage.*")):
+        session.run("coverage", "combine")
+
+    session.run("coverage", "json", "--fail-under=0")
+    session.run("codecov", *args)

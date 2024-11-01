@@ -12,6 +12,8 @@ from loguru import logger
 from rich import print as rprint
 from tqdm.auto import tqdm
 
+from pyplier.utils import fix_dataframe_dtypes
+
 DATAFRAME_MEMBERS = ("b", "z", "u", "c", "uauc", "up", "summary", "residual")
 
 
@@ -39,30 +41,30 @@ class PLIERResults:
         # backed: bool = False,
         # backing_file: Optional[Path] = None,
     ):
-        self.residual = residual or pd.DataFrame
-        self.b = b or pd.DataFrame
-        self.z = z or pd.DataFrame
-        self.u = u or pd.DataFrame
-        self.c = c or pd.DataFrame
+        self.residual = pd.DataFrame() if residual is None else residual
+        self.b = pd.DataFrame() if b is None else b
+        self.z = pd.DataFrame() if z is None else z
+        self.u = pd.DataFrame() if u is None else u
+        self.c = pd.DataFrame() if c is None else c
         self.l1 = l1
         self.l2 = l2
         self.l3 = l3
-        self.held_out_genes = held_out_genes or defaultdict(list)
-        self.with_prior = with_prior or defaultdict(int)
-        self.uauc = uauc or pd.DataFrame
-        self.up = up or pd.DataFrame
-        self.summary = summary or pd.DataFrame
+        self.held_out_genes = defaultdict(list) if held_out_genes is None else held_out_genes
+        self.with_prior = defaultdict(int) if with_prior is None else with_prior
+        self.uauc = pd.DataFrame() if uauc is None else uauc
+        self.up = pd.DataFrame() if up is None else up
+        self.summary = pd.DataFrame() if summary is None else summary
         # self.backed = backed
 
     def __repr__(self) -> str:
         return (
             "\n".join(
                 [
-                    f"{_} : {self.__dict__[_].shape[0]} rows x {self.__dict__[_].shape[1]} columns"
+                    f"{_}: {self.__dict__[_].shape[0]} rows x {self.__dict__[_].shape[1]} columns"
                     for _ in DATAFRAME_MEMBERS
                 ]
             )
-            + f"held_out_genes: {len(self.held_out_genes)}\n"
+            + f"\nheld_out_genes: {len(self.held_out_genes)}\n"
             f"with_prior: {len(self.with_prior)}\n"
             f"l1 is set to {self.l1:.4f}\n"
             f"l2 is set to {self.l2:.4f}\n"
@@ -75,7 +77,7 @@ class PLIERResults:
     def __eq__(self, other) -> bool:
         equal = True
         for i in DATAFRAME_MEMBERS:
-            if not np.isclose(self.__dict__[i], other.__dict__[i]).all():
+            if pd.testing.assert_frame_equal(self.__dict__[i], other.__dict__[i]) is False:
                 logger.info(f"{i} is unequal")
                 rprint(f"[red]{i}[/red] is unequal")
                 equal = False
@@ -153,20 +155,20 @@ class PLIERResults:
                 store.create_dataset("l2", (1,), dtype=float, data=self.l2)
                 store.create_dataset("l3", (1,), dtype=float, data=self.l3)
 
-                encode_dict(h5=store, dc=self.held_out_genes, key="held_out_enes")
+                encode_dict(h5=store, dc=self.held_out_genes, key="held_out_genes")
                 encode_dict(h5=store, dc=self.with_prior, key="with_prior", dtype=int)
 
     @classmethod
     def from_dict(cls, source):
         pr = cls()
         if "b" in source:
-            pr.b = pd.DataFrame.from_dict(source["b"])
+            pr.b = pd.DataFrame.from_dict(source["b"]).astype(np.float64)
         if "z" in source:
-            pr.z = pd.DataFrame.from_dict(source["z"])
+            pr.z = pd.DataFrame.from_dict(source["z"]).astype(np.float64)
         if "u" in source:
-            pr.u = pd.DataFrame.from_dict(source["u"])
+            pr.u = pd.DataFrame.from_dict(source["u"]).astype(np.float64)
         if "c" in source:
-            pr.c = pd.DataFrame.from_dict(source["c"])
+            pr.c = pd.DataFrame.from_dict(source["c"]).astype(np.int64)
 
         if "l1" in source:
             pr.l1 = source["l1"]
@@ -181,13 +183,18 @@ class PLIERResults:
             pr.with_prior = source["with_prior"]
 
         if "residual" in source:
-            pr.residual = pd.DataFrame.from_dict(source["residual"])
+            pr.residual = pd.DataFrame.from_dict(source["residual"]).astype(np.float64)
         if "uauc" in source:
-            pr.uauc = pd.DataFrame.from_dict(source["uauc"])
+            pr.uauc = pd.DataFrame.from_dict(source["uauc"]).astype(np.float64)
         if "up" in source:
-            pr.up = pd.DataFrame.from_dict(source["up"])
+            pr.up = pd.DataFrame.from_dict(source["up"]).astype(np.float64)
         if "summary" in source:
-            pr.summary = pd.DataFrame.from_dict(source["summary"])
+            pr.summary = (
+                pd.DataFrame.from_dict(source["summary"])
+                .astype({"LV index": float})
+                .astype({"LV index": int})
+                .astype({"LV index": str, "AUC": float, "p-value": float, "FDR": float})
+            )
         return pr
 
     @classmethod
@@ -212,7 +219,8 @@ class PLIERResults:
                 data=h5[group]["data"],
                 index=pd.Series(h5[group]["index"]).str.decode(codec),
                 columns=pd.Series(h5[group]["columns"]).str.decode(codec),
-            ).apply(lambda x: x.str.decode(codec) if x.dtype == "object" else x)
+            )
+            df = fix_dataframe_dtypes(df=df, codec=codec)
             return df
 
         def decode_dict(h5: h5py._hl.files.File, group: str) -> dict[str, list[str]]:
@@ -244,13 +252,14 @@ class PLIERResults:
                     c=decode_df(store, "c"),
                     l1=store["l1"][0],
                     l2=store["l2"][0],
-                    k3=store["l3"][0],
+                    l3=store["l3"][0],
                     held_out_genes=decode_dict(store, "held_out_genes"),
                     with_prior={k: with_prior[k] for k in sorted(with_prior, key=only_int)},
                     uauc=decode_df(store, "uauc"),
                     up=decode_df(store, "up"),
                     summary=decode_df(store, "summary")
-                    .apply(lambda x: x.str.decode("UTF-8"))
+                    .astype({"LV index": np.float64})
+                    .astype({"LV index": np.int64})
                     .astype({"LV index": str, "AUC": float, "p-value": float, "FDR": float}),
                     residual=decode_df(store, "residual"),
                 )

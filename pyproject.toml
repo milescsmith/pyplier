@@ -6,7 +6,7 @@ build-backend = "pdm.backend"
 authors = [
     {name = "milescsmith", email = "mileschristiansmith@gmail.com"},
 ]
-license = {text = "MPL2.0"}
+license = { text = "MPL2.0" }
 requires-python = "<3.11,>=3.10"
 dependencies = [
     "numpy>=1.26.4",
@@ -26,7 +26,7 @@ dependencies = [
     "loguru>=0.7.2",
 ]
 name = "pyplier"
-version = "1.9.0"
+version = "1.10.0"
 description = "Python reimplementation of PLIER"
 
 [tool.pdm]
@@ -41,7 +41,33 @@ dev = [
     "pytest-cov>=5.0.0",
     "coverage>=7.5.3",
     "ruff>=0.4.8",
+    "pytest-random-order>=1.1.1",
+    "pytest-xdist[psutil]>=3.6.1",
 ]
+
+[tool.pdm.scripts]
+format = "ruff format src/"
+lint = "ruff check --fix src/"
+test = "nox"
+all = {composite = ["format", "lint", "test"]}
+
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+
+[tool.coverage.run]
+branch = true
+source = ["pyplier"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
+
+[tool.pytest.ini_options]
+pythonpath = "."
+addopts = [
+    "--import-mode=importlib",
+]
+typeguard-packages = "pyplier"
 
 [tool.pdm.build]
 includes = []

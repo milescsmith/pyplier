@@ -1,29 +1,21 @@
-import importlib.resources as ir
-
 import pandas as pd
 import pytest
-
 from pyplier.regression import pinv_ridge
 
 
 @pytest.fixture
-def input_data():
-    input_file = ir.files("tests").joinpath("data", "pinv_ridge", "input_matrix.csv.gz")
-    with ir.as_file(input_file) as inpf:
-        input_data = pd.read_csv(inpf, index_col=0)
-
-    return input_data
+def pinv_dir(data_dir):
+    return data_dir.joinpath("pinv_ridge")
 
 
 @pytest.fixture
-def expected_results():
-    expected_file = ir.files("tests").joinpath(
-        "data", "pinv_ridge", "expected_results.csv.gz"
-    )
-    with ir.as_file(expected_file) as ef:
-        expected_results = pd.read_csv(ef, index_col=0)
+def input_data(pinv_dir):
+    return pd.read_csv(pinv_dir.joinpath("input_matrix.csv.gz"), index_col=0)
 
-    return expected_results
+
+@pytest.fixture
+def expected_results(pinv_dir):
+    return pd.read_csv(pinv_dir.joinpath("expected_results.csv.gz"), index_col=0)
 
 
 def test_nameB(input_data, expected_results):

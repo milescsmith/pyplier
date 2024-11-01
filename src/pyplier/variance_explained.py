@@ -41,18 +41,18 @@ def VarianceExplained(
 
 @ensure(lambda a: a.ndim == 1, "a is not 1d")
 @ensure(lambda b: b.ndim == 1, "b is not 1d")
-def calc_res(a: npt.arraylike, b: npt.arraylike) -> float:
+def calc_res(a: npt.NDArray, b: npt.NDArray) -> float:
     zreg = np.multiply(b @ a, pinv(a)[0])
     return np.sum((np.reshape(zreg, (len(zreg), 1)) @ np.reshape(a, (1, len(a))) - np.mean(b.flatten())) ** 2)
 
 
 @ensure(lambda a: a.ndim == 1, "a must be 1-d")
 @ensure(lambda b: b.ndim == 1, "b must be 1-d")
-def matmul1d(a: npt.arraylike, b: npt.arraylike) -> npt.arraylike:
+def matmul1d(a: npt.NDArray, b: npt.NDArray) -> npt.NDArray:
     return np.matmul(np.reshape(a, (len(a), 1)), np.reshape(b, (1, len(b))))
 
 
-def calc_project(a: npt.arraylike, b: npt.arraylike) -> float:
+def calc_project(a: npt.NDArray, b: npt.NDArray) -> float:
     if a.shape[0] == 1:
         xk = matmul1d(
             (b @ a.T @ pinv(a @ a.T)[0]).values,

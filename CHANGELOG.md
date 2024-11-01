@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0] - 2024-11-01
+
+### Changed
+
+- Renamed a lot of functions and variables to follow standard Python naming conventions (i.e make ruff stop complaining)
+- Reworked a lot of the unit tests
+
 ## [1.8.0] - 2022-09-23
 
 ### Changed

@@ -43,6 +43,7 @@ ignore = [
     "FBT001",
     "FBT002",
     "FBT003",
+    "ISC001",
     "N802",
     "N803",
     "PLR0911",
@@ -77,6 +78,9 @@ exclude = [
     ".svn",
     "__pypackages__",
 ]
+
+[lint.per-file-ignores]
+"tests/**.py" = ["S101"]
 
 [format]
 # Like Black, use double quotes for strings.

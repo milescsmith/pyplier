@@ -1,30 +1,24 @@
-import importlib.resources as ir
-
 import hypothesis.extra.numpy as npst
 import hypothesis.strategies as st
 import numpy as np
 import pytest
 from hypothesis import given, settings
-
 from pyplier.num_pc import num_pc
 
 
 @pytest.fixture
-def test_100_mat() -> np.ndarray:
-    mat_file = ir.files("tests").joinpath("data/num_pc/test_pc_mat_100.csv.gz")
-    with ir.as_file(mat_file) as m100:
-        mat_100 = np.loadtxt(m100, delimiter=",")
-
-    return mat_100
+def num_pc_dir(data_dir):
+    return data_dir.joinpath("num_pc")
 
 
 @pytest.fixture
-def test_1000_mat() -> np.ndarray:
-    mat_file = ir.files("tests").joinpath("data/num_pc/test_pc_mat_1000.csv.gz")
-    with ir.as_file(mat_file) as m1000:
-        mat_1000 = np.loadtxt(m1000, delimiter=",")
+def test_100_mat(num_pc_dir) -> np.ndarray:
+    return np.loadtxt(num_pc_dir.joinpath("test_pc_mat_100.csv.gz"), delimiter=",")
 
-    return mat_1000
+
+@pytest.fixture
+def test_1000_mat(num_pc_dir) -> np.ndarray:
+    return np.loadtxt(num_pc_dir.joinpath("test_pc_mat_1000.csv.gz"), delimiter=",")
 
 
 def test_num_pc(test_100_mat, test_1000_mat):

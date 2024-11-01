@@ -6,7 +6,7 @@ import pandas as pd
 from statsmodels.stats.multitest import multipletests
 from tqdm.auto import tqdm
 
-from pyplier.auc import AUC
+from pyplier.auc import auc
 from pyplier.plier_res import PLIERResults
 
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
@@ -63,7 +63,7 @@ def crossVal(
                 b = priorMat.loc[:, j].where(lambda x: x > 0).dropna().index
                 c = priorMatcv.loc[:, j].where(lambda x: x == 0).dropna().index
                 iiheldout = a.union(b.intersection(c))
-                aucres = AUC(priorMat.loc[iiheldout, j], plierRes.z.loc[iiheldout, i])
+                aucres = auc(priorMat.loc[iiheldout, j], plierRes.z.loc[iiheldout, i])
                 out_dict[j] = {
                     "pathway": j,
                     "LV index": i,
@@ -80,7 +80,7 @@ def crossVal(
             c = priorMatcv.loc[:, j].where(lambda x: x == 0).dropna().index
             iiheldout = a.union(b.intersection(c))
 
-            aucres = AUC(priorMat.loc[iiheldout, j], plierRes.z.loc[iiheldout, i])
+            aucres = auc(priorMat.loc[iiheldout, j], plierRes.z.loc[iiheldout, i])
             if isinstance(j, Iterable) and not isinstance(j, str):
                 for _ in j:
                     out_dict[_] = {

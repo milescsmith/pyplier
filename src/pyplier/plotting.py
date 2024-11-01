@@ -25,7 +25,7 @@ def plotMat(
     cutoff: float | None = None,
     *args,
     **kwargs,
-) -> dict[str, npt.arraylike]:
+) -> dict[str, npt.NDArray]:
     if trim_names is not None:
         mat.index = mat.index.str.slice(stop=trim_names)
         mat.columns = mat.columns.str.slice(stop=trim_names)

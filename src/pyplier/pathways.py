@@ -7,12 +7,14 @@ from pathlib import Path
 
 import pandas as pd
 
+from pyplier.utils import fix_dataframe_dtypes
 
-def combinePaths(*args) -> pd.DataFrame:
+
+def combine_paths(*args) -> pd.DataFrame:
     return pd.concat(args, axis=1, join="outer").fillna(0).astype(int)
 
 
-def pathwayFromGMT(gmt_file: Path) -> pd.DataFrame:
+def pathway_from_gmt(gmt_file: Path) -> pd.DataFrame:
     with gmt_file.open("r") as gf:
         gmt = gf.readlines()
 
@@ -27,10 +29,12 @@ def pathwayFromGMT(gmt_file: Path) -> pd.DataFrame:
         .explode(column="genes")
         .assign(genes=lambda x: x["genes"].str.strip(), count=1)
     )
-    return pd.pivot_table(
+    df = pd.pivot_table(
         gmt_long,
         values="count",
         index="genes",
         columns="pathway",
         fill_value=0,
     ).rename_axis(columns=None)
+
+    return fix_dataframe_dtypes(df)

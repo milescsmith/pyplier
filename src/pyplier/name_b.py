@@ -8,7 +8,7 @@ from pyplier.plier_res import PLIERResults
 PLIERRes = TypeVar("PLIERRes", bound="PLIERResults")
 
 
-def nameB(plierRes: PLIERResults, top: int = 1, fdr_cutoff: float = 0.01, use: str | None = None) -> list[str]:
+def name_b(plierRes: PLIERResults, top: int = 1, fdr_cutoff: float = 0.01, use: str | None = None) -> list[str]:
     """
     Rename latent variables to match the pathways that appear to correlate
     Number of pathways used in the name is controlled by `top`
@@ -39,7 +39,7 @@ def nameB(plierRes: PLIERResults, top: int = 1, fdr_cutoff: float = 0.01, use: s
     mm = uuse.apply(func=np.max, axis=0)
 
     for i in range(plierRes.u.shape[1]):
-        if mm[i] > 0:
+        if mm.iloc[i] > 0:
             names.append(
                 f"{i + 1}," + ",".join(uuse.iloc[:, i].sort_values(ascending=False).where(lambda x: x > 0).index[:top])
             )
