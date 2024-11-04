@@ -7,40 +7,41 @@ authors = [
     {name = "milescsmith", email = "mileschristiansmith@gmail.com"},
 ]
 license = { text = "MPL2.0" }
-requires-python = "<3.11,>=3.10"
+requires-python = ">=3.10"
 dependencies = [
-    "numpy>=1.26.4",
-    "pandas>=2.2.2",
-    "scipy>=1.13.1",
-    "statsmodels>=0.14.2",
+    "pysmooth>=1.5.0",
+    "numpy==1.26.4",
+    "pandas>=2.2.3",
+    "scipy>=1.14.1",
+    "statsmodels>=0.14.4",
     "joblib>=1.4.2",
-    "rich>=13.7.1",
-    "pysmooth>=1.3.0",
-    "icontract>=2.6.6",
-    "tqdm>=4.66.4",
-    "typeguard>=4.3.0",
+    "rich>=13.9.4",
+    "icontract>=2.7.1",
+    "tqdm>=4.66.6",
+    "typeguard>=4.4.0",
     "seaborn>=0.13.2",
-    "scikit-learn>=1.5.0",
-    "python-glmnet>=2.2.2.post2",
-    "h5py>=3.11.0",
+    "scikit-learn>=1.5.2",
+    "h5py>=3.12.1",
     "loguru>=0.7.2",
+    "python-glmnet>=2.2.2.post2",
+    "glum>=3.0.2",
 ]
 name = "pyplier"
-version = "1.10.0"
+version = "1.11.0"
 description = "Python reimplementation of PLIER"
 
 [tool.pdm]
 [tool.pdm.dev-dependencies]
 dev = [
-    "nox>=2024.4.15",
-    "hypothesis>=6.103.1",
-    "pytest>=8.2.2",
+    "nox>=2024.10.9",
+    "hypothesis>=6.116.0",
+    "pytest>=8.3.3",
     "icontract-hypothesis>=1.1.7",
-    "dill>=0.3.8",
-    "deepdiff>=7.0.1",
-    "pytest-cov>=5.0.0",
-    "coverage>=7.5.3",
-    "ruff>=0.4.8",
+    "dill>=0.3.9",
+    "deepdiff>=8.0.1",
+    "pytest-cov>=6.0.0",
+    "coverage[toml]>=7.6.4",
+    "ruff>=0.7.2",
     "pytest-random-order>=1.1.1",
     "pytest-xdist[psutil]>=3.6.1",
 ]

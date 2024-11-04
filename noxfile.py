@@ -19,7 +19,6 @@ locations = (
     "tests",
 )
 
-
 @nox.session
 def lint(session: nox.session) -> None:
     """Lint using ruff."""
