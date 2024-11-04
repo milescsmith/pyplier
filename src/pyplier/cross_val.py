@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from statsmodels.stats.multitest import multipletests
 from tqdm.auto import tqdm
+from tqdm.contrib import tenumerate
 
 from pyplier.auc import auc
 from pyplier.plier_res import PLIERResults
@@ -53,11 +54,11 @@ def crossVal(
         columns=plierRes.u.columns,
     )
 
-    for i in tqdm(ii, disable=disable_progress, leave=persistent_progress, position=0, desc="LV crossval"):
+    for n, i in tenumerate(ii, disable=disable_progress, leave=persistent_progress, position=0, desc="LV crossval"):
         iipath = plierRes.u.loc[(plierRes.u.loc[:, i] > 0), i].index
         if len(iipath) > 1:
             for j in tqdm(
-                iipath, disable=disable_progress, leave=persistent_progress, position=0, desc=f"crossval of LV{i+1}"
+                iipath, disable=disable_progress, leave=persistent_progress, position=0, desc=f"crossval of LV{(n+1)!s}"
             ):
                 a = priorMat.loc[:, iipath].sum(axis=1).where(lambda x: x == 0).dropna().index
                 b = priorMat.loc[:, j].where(lambda x: x > 0).dropna().index
@@ -104,4 +105,4 @@ def crossVal(
     out = pd.DataFrame.from_dict(out_dict, orient="index").set_index("pathway")
     _, fdr, *_ = multipletests(out.loc[:, "p-value"], method="fdr_bh")
     out.loc[:, "FDR"] = fdr
-    return {"Uauc": uauc, "Upval": up, "summary": out}
+    return {"uauc": uauc, "upval": up, "summary": out}

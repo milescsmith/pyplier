@@ -27,7 +27,7 @@ def upval_df(get_auc_dir):
 
 @pytest.fixture
 def auc_results(uauc_df, upval_df, summary_df):
-    return {"Uauc": uauc_df, "Upval": upval_df, "summary": summary_df}
+    return {"uauc": uauc_df, "upval": upval_df, "summary": summary_df}
 
 
 def test_getCutoff(auc_results):

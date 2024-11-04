@@ -29,7 +29,6 @@ MIN_ITERATIONS = 52
 LARGE_NUMBER_OF_COLUMNS = 500
 
 
-@require(lambda pathwaySelection: pathwaySelection in ("complete", "fast"))
 def PLIER(
     data: pd.DataFrame,  # for anndata objects, this will need to be transposed
     prior_mat: pd.DataFrame,
@@ -106,7 +105,7 @@ def PLIER(
     rseed : int, optional
         Set this option to use a random initialization, instead of SVD. Defaults to None.
     pathwaySelection : str, optional
-        Pathways to be optimized with elstic-net penalty are preselected based on ridge regression results. 'Complete' uses all top pathways to fit individual LVs. 'Fast' uses only the top pathways for the single LV in question. Defaults to "complete".
+        Pathways to be optimized with elastic-net penalty are preselected based on ridge regression results. 'Complete' uses all top pathways to fit individual LVs. 'Fast' uses only the top pathways for the single LV in question. Defaults to "complete".
     persistent_progress : bool
         Should the progress bar progress be kept after completion? Defaults to True.
     disable_progress :
@@ -131,6 +130,9 @@ def PLIER(
         - residual
     """
 
+    if pathway_selection not in ["complete", "fast"]:
+        msg = f"{pathway_selection} is not a valid choice. Please pass either 'complete' or 'fast'"
+        raise ValueError(msg)
     if penalty_factor is None:
         penalty_factor = np.ones(prior_mat.shape[1])
 
@@ -276,8 +278,8 @@ def PLIER(
                     persistent_progress=persistent_progress,
                     target_frac=frac,
                 )
-                u = u_list["U"]
-                l3 = u_list["L3"]
+                u = u_list["u"]
+                l3 = u_list["l3"]
                 rprint(f"New L3 is {l3}")
                 iter_full = iter_full + iter_full_start
             else:
@@ -291,8 +293,8 @@ def PLIER(
                     max_path=max_path,
                     disable_progress=disable_progress,
                     persistent_progress=persistent_progress,
-                    L3=l3,
-                )["U"]
+                    l3=l3,
+                )["u"]
 
             z1 = tcrossprod(y, b)
             z2 = l1 * (c @ u)
@@ -367,8 +369,8 @@ def PLIER(
         out_auc = get_auc(out, y, prior_mat)
 
     out.with_prior = u.sum(axis="index")[u.sum(axis="index") > 0].to_dict()
-    out.uauc = out_auc["Uauc"]
-    out.up = out_auc["Upval"]
+    out.uauc = out_auc["uauc"]
+    out.up = out_auc["upval"]
     out.summary = out_auc["summary"]
     tt = out.uauc.max(axis="index")
     rprint(f"There are {sum(tt > AUC_CUTOFF)} LVs with AUC > 0.70")

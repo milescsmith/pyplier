@@ -202,4 +202,4 @@ def get_auc(plierRes: PLIERResults, data: pd.DataFrame, priorMat: pd.DataFrame) 
     )  # to match the output from {PLIER}
     _, fdr, *_ = multipletests(out.loc[:, "p-value"], method="fdr_bh")
     out.loc[:, "FDR"] = fdr
-    return {"Uauc": uauc, "Upval": up, "summary": out.reset_index(drop=True)}
+    return {"uauc": uauc, "upval": up, "summary": out.reset_index(drop=True)}

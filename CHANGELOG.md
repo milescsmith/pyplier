@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1] - 2024-11-04
+
+### Fixed
+
+- Caught a few stray variable names that had not had their capitalizaition changed
+- Removed a decorator from PLIER that forced passing a value when a default was there
+
 ## [1.10.0] - 2024-11-01
 
 ### Changed

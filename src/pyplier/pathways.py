@@ -14,7 +14,12 @@ def combine_paths(*args) -> pd.DataFrame:
     return pd.concat(args, axis=1, join="outer").fillna(0).astype(int)
 
 
-def pathway_from_gmt(gmt_file: Path) -> pd.DataFrame:
+def pathway_from_gmt(gmt_file: Path | str) -> pd.DataFrame:
+    gmt_file = Path(gmt_file) if isinstance(gmt_file, str) else gmt_file
+    if not gmt_file.exists():
+        msg = f"{gmt_file} was not found"
+        raise FileNotFoundError(msg)
+
     with gmt_file.open("r") as gf:
         gmt = gf.readlines()
 

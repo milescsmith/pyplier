@@ -81,7 +81,7 @@ def upval_df(get_auc_dir):
 
 @pytest.fixture
 def expected_auc(summary_df, uauc_df, upval_df):
-    return {"Uauc": uauc_df, "Upval": upval_df, "summary": summary_df}
+    return {"uauc": uauc_df, "upval": upval_df, "summary": summary_df}
 
 
 # @pytest.mark.auc
@@ -89,6 +89,6 @@ def test_get_auc(test_plier_res, test_data, test_prior_mat, expected_auc):
     __tracebackhide__ = True
     test_res = get_auc(plierRes=test_plier_res, data=test_data, priorMat=test_prior_mat)
 
-    pd.testing.assert_frame_equal(test_res["Uauc"], expected_auc["Uauc"])
-    pd.testing.assert_frame_equal(test_res["Upval"], expected_auc["Upval"])
+    pd.testing.assert_frame_equal(test_res["uauc"], expected_auc["uauc"])
+    pd.testing.assert_frame_equal(test_res["upval"], expected_auc["upval"])
     pd.testing.assert_frame_equal(test_res["summary"], expected_auc["summary"])
