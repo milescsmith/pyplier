@@ -74,26 +74,26 @@ def solve_u(
         lambdas = np.exp(np.arange(start=-4, stop=-12.125, step=-0.125))
         results = {}
         l_mat = np.full((len(lambdas), z.shape[1]), np.nan)
-        # gres = ElasticNet(
-        #     lambda_path=lambdas,
-        #     lower_limits=0,
-        #     standardize=False,
-        #     fit_intercept=True,
-        #     alpha=glm_alpha,
-        #     max_features=150,
-        # )
-        gres = GeneralizedLinearRegressor(
-            l1_ratio=0.9,
-            alpha=lambdas,
-            alpha_search=True,
+        gres = ElasticNet(
+            lambda_path=lambdas,
+            lower_limits=0,
+            standardize=False,
             fit_intercept=True,
-            scale_predictors=False,
-            family="gaussian",
-            # link="log",
-            solver="irls-cd",
-            lower_bounds=0,
-            # random_state=0,
+            alpha=glm_alpha,
+            max_features=150,
         )
+        # gres = GeneralizedLinearRegressor(
+        #     l1_ratio=0.9,
+        #     alpha=lambdas,
+        #     alpha_search=True,
+        #     fit_intercept=True,
+        #     scale_predictors=False,
+        #     family="gaussian",
+        #     # link="log",
+        #     solver="irls-cd",
+        #     lower_bounds=0,
+        #     # random_state=0,
+        # )
 
         for i in trange(
             z.shape[1], disable=disable_progress, leave=persistent_progress, desc="Performing ElasticNet fit"
@@ -103,15 +103,15 @@ def solve_u(
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                # gres.fit(
-                #     y=z.iloc[:, i],
-                #     X=prior_mat.iloc[:, iip],
-                #     # relative_penalties=penalty_factor[iip],
-                # )
                 gres.fit(
-                    X=np.add(prior_mat.iloc[:,iip], penalty_factor[iip]),
-                    y=z.iloc[:,i],
+                    y=z.iloc[:, i],
+                    X=prior_mat.iloc[:, iip],
+                    relative_penalties=penalty_factor[iip],
                 )
+                # gres.fit(
+                #     X=np.add(prior_mat.iloc[:,iip], penalty_factor[iip]),
+                #     y=z.iloc[:,i],
+                # )
 
             gres.iip = iip
             l_mat[:, i] = np.sum(np.where(gres.coef_path_ > 0, 1, 0), axis=0)
@@ -131,26 +131,26 @@ def solve_u(
         l3 = lambdas[iibest]
     else:
         # do one fit with a given lambda
-        # gres = ElasticNet(
-        #     lambda_path=[l3 * 0.9, l3, l3 * 1.1],
-        #     lower_limits=0,
-        #     standardize=False,
-        #     fit_intercept=True,
-        #     alpha=glm_alpha,
-        #     max_features=150,
-        # )
-        gres = GeneralizedLinearRegressor(
-            l1_ratio=0.9,
-            alpha=[l3 * 0.9, l3, l3 * 1.1],
-            alpha_search=True,
+        gres = ElasticNet(
+            lambda_path=[l3 * 0.9, l3, l3 * 1.1],
+            lower_limits=0,
+            standardize=False,
             fit_intercept=True,
-            scale_predictors=False,
-            family="gaussian",
-            # link="log",
-            solver="irls-cd",
-            lower_bounds=0,
-            random_state=0,
+            alpha=glm_alpha,
+            max_features=150,
         )
+        # gres = GeneralizedLinearRegressor(
+        #     l1_ratio=0.9,
+        #     alpha=[l3 * 0.9, l3, l3 * 1.1],
+        #     alpha_search=True,
+        #     fit_intercept=True,
+        #     scale_predictors=False,
+        #     family="gaussian",
+        #     # link="log",
+        #     solver="irls-cd",
+        #     lower_bounds=0,
+        #     random_state=0,
+        # )
 
         for i in range(z.shape[1]):
             if pathway_selection == "fast":
@@ -160,15 +160,15 @@ def solve_u(
                 warnings.simplefilter("ignore")
 
                 # try:
-                # gres.fit(
-                #     y=z.iloc[:, i],
-                #     X=prior_mat.iloc[:, iip],
-                #     relative_penalties=penalty_factor[iip],
-                # )
                 gres.fit(
                     y=z.iloc[:, i],
-                    X=np.add(prior_mat.iloc[:, iip], penalty_factor[iip]),
+                    X=prior_mat.iloc[:, iip],
+                    relative_penalties=penalty_factor[iip],
                 )
+                # gres.fit(
+                #     y=z.iloc[:, i],
+                #     X=np.add(prior_mat.iloc[:, iip], penalty_factor[iip]),
+                # )
             results[i] = pd.Series(data=gres.coef_path_[:, 1], index=ur.index[iip])
 
         u = pd.DataFrame(results, index=prior_mat.columns).fillna(0)
