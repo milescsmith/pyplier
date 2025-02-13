@@ -10,7 +10,7 @@ license = { text = "MPL2.0" }
 requires-python = ">=3.10"
 dependencies = [
     "pysmooth>=1.5.0",
-    "numpy==1.26.4",
+    "numpy==2.2.3",
     "pandas>=2.2.3",
     "scipy>=1.14.1",
     "statsmodels>=0.14.4",
