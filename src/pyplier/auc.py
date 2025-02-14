@@ -142,10 +142,10 @@ def mannwhitneyu_conf_int(
         cint = (lower, upper)
     elif alternative == "greater":
         lower = root(norm.isf(alpha))
-        cint = (lower, np.PINF)
+        cint = (lower, np.inf)
     elif alternative == "less":
         upper = root(norm.ppf(alpha))
-        cint = (np.NINF, upper)
+        cint = (-np.inf, upper)
     else:
         cint = (np.nan, np.nan)
 

@@ -5,7 +5,7 @@ from typing import Literal, TypeVar
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from icontract import require
+from loguru import logger
 from numpy.random import default_rng
 from rich import print as rprint
 from scipy.linalg import solve, svd
@@ -14,6 +14,7 @@ from tqdm.auto import tqdm, trange
 
 from pyplier.auc import get_auc
 from pyplier.cross_val import crossVal
+from pyplier.logger import init_logger
 from pyplier.name_b import name_b
 from pyplier.num_pc import num_pc
 from pyplier.plier_res import PLIERResults
@@ -54,6 +55,8 @@ def PLIER(
     pathway_selection: Literal["complete", "fast"] = "complete",
     persistent_progress: bool = True,
     disable_progress: bool = False,
+    debug: bool = False,
+    save_log: bool = False,
 ) -> PLIERRes:
     """ "Main PLIER function
 
@@ -129,6 +132,17 @@ def PLIER(
         - summary
         - residual
     """
+
+    logger.remove()
+    if debug:
+        if save_log:
+            init_logger(verbose=3, save=True)
+        else:
+            init_logger(verbose=3, save=False)
+    else:
+        init_logger(verbose=2, msg_format="* <level>{message}</level>")
+        if save_log:
+            logger.warning("You passed `save_log`, but that only works with `debug`")
 
     if pathway_selection not in ["complete", "fast"]:
         msg = f"{pathway_selection} is not a valid choice. Please pass either 'complete' or 'fast'"

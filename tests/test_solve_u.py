@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pyplier.solve_u import solve_u
 from pytest import approx
+
+from pyplier.solve_u import solve_u
 
 
 @pytest.fixture

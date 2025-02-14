@@ -1,8 +1,10 @@
 import hypothesis.extra.numpy as npst
 import hypothesis.strategies as st
 import numpy as np
+import numpy.testing as npt
 import pytest
 from hypothesis import given, settings
+
 from pyplier.num_pc import num_pc
 
 
@@ -12,12 +14,12 @@ def num_pc_dir(data_dir):
 
 
 @pytest.fixture
-def test_100_mat(num_pc_dir) -> np.ndarray:
+def test_100_mat(num_pc_dir) -> npt.NDArray:
     return np.loadtxt(num_pc_dir.joinpath("test_pc_mat_100.csv.gz"), delimiter=",")
 
 
 @pytest.fixture
-def test_1000_mat(num_pc_dir) -> np.ndarray:
+def test_1000_mat(num_pc_dir) -> npt.NDArray:
     return np.loadtxt(num_pc_dir.joinpath("test_pc_mat_1000.csv.gz"), delimiter=",")
 
 

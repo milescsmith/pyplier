@@ -1,5 +1,5 @@
 line-length = 120
-target-version = "py310"
+target-version = "py312"
 
 [lint]
 select = [
@@ -46,6 +46,7 @@ ignore = [
     "ISC001",
     "N802",
     "N803",
+    "N806",
     "PLR0911",
     "PLR0912",
     "PLR0913",
@@ -79,9 +80,6 @@ exclude = [
     "__pypackages__",
 ]
 
-[lint.per-file-ignores]
-"tests/**.py" = ["S101"]
-
 [format]
 # Like Black, use double quotes for strings.
 quote-style = "double"
@@ -94,3 +92,7 @@ skip-magic-trailing-comma = false
 
 # Like Black, automatically detect the appropriate line ending.
 line-ending = "auto"
+
+[lint.extend-per-file-ignores]
+# Stop ruff from complaining about "assert" in the unit tests
+"test*.py" = ["S101"]

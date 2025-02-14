@@ -3,9 +3,9 @@ from copy import deepcopy
 from typing import Literal, TypedDict
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from glmnet import ElasticNet
-from glum import GeneralizedLinearRegressor
 from tqdm.auto import trange
 
 
@@ -15,10 +15,10 @@ class SolveUReturnDict(TypedDict):
 
 
 def solve_u(
-    z,
-    chat,
-    prior_mat,
-    penalty_factor,
+    z: pd.DataFrame,
+    chat: pd.DataFrame,
+    prior_mat: pd.DataFrame,
+    penalty_factor: npt.NDArray,
     pathway_selection: Literal["complete", "fast"] = "fast",
     glm_alpha: float = 0.9,
     max_path: int = 10,
@@ -82,18 +82,6 @@ def solve_u(
             alpha=glm_alpha,
             max_features=150,
         )
-        # gres = GeneralizedLinearRegressor(
-        #     l1_ratio=0.9,
-        #     alpha=lambdas,
-        #     alpha_search=True,
-        #     fit_intercept=True,
-        #     scale_predictors=False,
-        #     family="gaussian",
-        #     # link="log",
-        #     solver="irls-cd",
-        #     lower_bounds=0,
-        #     # random_state=0,
-        # )
 
         for i in trange(
             z.shape[1], disable=disable_progress, leave=persistent_progress, desc="Performing ElasticNet fit"
@@ -108,10 +96,6 @@ def solve_u(
                     X=prior_mat.iloc[:, iip],
                     relative_penalties=penalty_factor[iip],
                 )
-                # gres.fit(
-                #     X=np.add(prior_mat.iloc[:,iip], penalty_factor[iip]),
-                #     y=z.iloc[:,i],
-                # )
 
             gres.iip = iip
             l_mat[:, i] = np.sum(np.where(gres.coef_path_ > 0, 1, 0), axis=0)
@@ -139,18 +123,6 @@ def solve_u(
             alpha=glm_alpha,
             max_features=150,
         )
-        # gres = GeneralizedLinearRegressor(
-        #     l1_ratio=0.9,
-        #     alpha=[l3 * 0.9, l3, l3 * 1.1],
-        #     alpha_search=True,
-        #     fit_intercept=True,
-        #     scale_predictors=False,
-        #     family="gaussian",
-        #     # link="log",
-        #     solver="irls-cd",
-        #     lower_bounds=0,
-        #     random_state=0,
-        # )
 
         for i in range(z.shape[1]):
             if pathway_selection == "fast":
@@ -165,10 +137,6 @@ def solve_u(
                     X=prior_mat.iloc[:, iip],
                     relative_penalties=penalty_factor[iip],
                 )
-                # gres.fit(
-                #     y=z.iloc[:, i],
-                #     X=np.add(prior_mat.iloc[:, iip], penalty_factor[iip]),
-                # )
             results[i] = pd.Series(data=gres.coef_path_[:, 1], index=ur.index[iip])
 
         u = pd.DataFrame(results, index=prior_mat.columns).fillna(0)

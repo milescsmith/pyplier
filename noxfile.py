@@ -5,7 +5,8 @@ from pathlib import Path
 import nox
 
 PACKAGE = "revseq"
-PYTHON_VERSIONS = ["3.10", "3.11"]
+PYTHON_VERSIONS = ["3.10", "3.11", "3.12"]
+LATEST_VERSION = PYTHON_VERSIONS[-1]
 os.environ["PDM_IGNORE_SAVED_PYTHON"] = "1"
 os.environ["PDM_IGNORE_ACTIVE_VENV"] = "0"
 nox.needs_version = ">=2024.4.15"
@@ -19,7 +20,7 @@ locations = (
     "tests",
 )
 
-@nox.session
+@nox.session(python=LATEST_VERSION, reuse_venv=True)
 def lint(session: nox.session) -> None:
     """Lint using ruff."""
     args = session.posargs or locations
@@ -27,7 +28,7 @@ def lint(session: nox.session) -> None:
     session.run("ruff", *args)
 
 
-@nox.session(python="3.10")
+@nox.session(python=LATEST_VERSION, reuse_venv=True)
 def mypy(session: nox.Session) -> None:
     """Type-check using mypy."""
     session.run_always("pdm", "install", "--no-self", "--no-default", "--dev", external=True)
@@ -41,13 +42,13 @@ def mypy(session: nox.Session) -> None:
     )
 
 
-@nox.session(python=PYTHON_VERSIONS)
+@nox.session(python=LATEST_VERSION, reuse_venv=True)
 def lockfile(session: nox.Session) -> None:
     """Run the test suite."""
     session.run_always("pdm", "lock", external=True)
 
 
-@nox.session(python=PYTHON_VERSIONS)
+@nox.session(python=PYTHON_VERSIONS, reuse_venv=False) #PYTHON_VERSIONS
 def tests(session: nox.Session) -> None:
     """Run the test suite."""
     session.run_always("pdm", "install", "--fail-fast", "--frozen-lockfile", "--dev", external=True)
@@ -56,7 +57,7 @@ def tests(session: nox.Session) -> None:
     )
 
 
-@nox.session(python=PYTHON_VERSIONS)
+@nox.session(python=LATEST_VERSION, reuse_venv=True)
 def coverage(session: nox.Session) -> None:
     """Produce the coverage report."""
     args = session.posargs or ["report"]

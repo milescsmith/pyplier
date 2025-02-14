@@ -1,5 +1,5 @@
 [build-system]
-requires = ["pdm-backend"]
+requires = ["pdm-backend", "numpy"]
 build-backend = "pdm.backend"
 
 [project]
@@ -10,7 +10,7 @@ license = { text = "MPL2.0" }
 requires-python = ">=3.10"
 dependencies = [
     "pysmooth>=1.5.0",
-    "numpy==1.26.4",
+    "numpy>=2.0",
     "pandas>=2.2.3",
     "scipy>=1.14.1",
     "statsmodels>=0.14.4",
@@ -23,11 +23,10 @@ dependencies = [
     "scikit-learn>=1.5.2",
     "h5py>=3.12.1",
     "loguru>=0.7.2",
-    "python-glmnet>=2.2.2.post2",
-    "glum>=3.0.2",
+    "python-glmnet @ git+https://github.com/milescsmith/python-glmnet.git@2.5.0",
 ]
 name = "pyplier"
-version = "1.11.1"
+version = "1.12.0"
 description = "Python reimplementation of PLIER"
 
 [tool.pdm]
@@ -44,6 +43,7 @@ dev = [
     "ruff>=0.7.2",
     "pytest-random-order>=1.1.1",
     "pytest-xdist[psutil]>=3.6.1",
+    "mypy>=1.13.0",
 ]
 
 [tool.pdm.scripts]

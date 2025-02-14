@@ -78,7 +78,7 @@ def compute_uu(data, **kwargs):
 
 
 @compute_uu.register
-def _(data: np.ndarray, **kwargs) -> tuple[np.ndarray, str]:
+def _(data: npt.NDArray, **kwargs) -> tuple[npt.NDArray, str]:
     rprint("Computing svd")
     scaler = StandardScaler()
     data = scaler.fit_transform(data.T)
@@ -87,12 +87,12 @@ def _(data: np.ndarray, **kwargs) -> tuple[np.ndarray, str]:
 
 
 @compute_uu.register
-def _(data: pd.DataFrame, **kwargs) -> tuple[np.ndarray, str]:
+def _(data: pd.DataFrame, **kwargs) -> tuple[npt.NDArray, str]:
     return compute_uu(data.to_numpy(), **kwargs)
 
 
 @compute_uu.register
-def _(data: dict, **kwargs) -> tuple[np.ndarray, str]:
+def _(data: dict, **kwargs) -> tuple[npt.NDArray, str]:
     if data["d"] is not None:
         if kwargs["method"] == "permutation":
             rprint("Original data is needed for permutation method.\nSetting method to elbow")
@@ -104,7 +104,7 @@ def _(data: dict, **kwargs) -> tuple[np.ndarray, str]:
 
 
 @ensure(lambda result: result > 1)
-def elbow(uu: np.ndarray) -> int:
+def elbow(uu: npt.NDArray) -> int:
     xraw = abs(np.diff(np.diff(uu)))
     rprint("Smoothing data")
     x = smooth(xraw, twiceit=True)
@@ -114,7 +114,7 @@ def elbow(uu: np.ndarray) -> int:
 
 
 @require(lambda data: data.ndim >= MIN_NUM_DIMENSIONS)
-def compute_svd(data: np.ndarray, k: int) -> np.ndarray:
+def compute_svd(data: npt.NDArray, k: int) -> npt.NDArray:
     n = data.shape[1]  # nrows
     if n < LARGE_NUMBER_OF_COLUMNS:
         uu = svd(data.transpose(), compute_uv=False)

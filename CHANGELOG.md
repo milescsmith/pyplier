@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.12.0] - 2025-02-14
+
+### Changed
+
+- Replace python-glmnet with my own that has an updated compile setup
+  and allows for numpy > 1.26
+- Use numpy >= 2.0
+- the main `PLIER` function now has options to enable debug logging and to save the log to a file
+
+### Fixed
+
+- Logging should work better
+- Random scattered fixes for numpy >= 2
+
+## [1.11.1] - 2024-11-XX
+
+### Changed
+- Replaced `numpy.ndarray` where it was used for typing with `numpy.testing.NDArray`
+
 ## [1.11.1] - 2024-11-04
 
 ### Fixed
